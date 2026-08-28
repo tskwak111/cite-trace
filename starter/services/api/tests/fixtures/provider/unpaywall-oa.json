@@ -1,0 +1,16 @@
+{
+  "doi": "10.1038/nature12373",
+  "is_oa": true,
+  "oa_status": "gold",
+  "title": "A true open access paper",
+  "best_oa_location": {
+    "url": "https://example.com/paper.pdf",
+    "url_for_pdf": "https://example.com/paper.pdf",
+    "url_for_landing_page": "https://example.com/paper",
+    "is_best": true,
+    "license": "cc-by",
+    "version": "publishedVersion",
+    "host_type": "publisher"
+  },
+  "oa_locations": []
+}

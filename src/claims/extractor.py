@@ -11,5 +11,5 @@ class ClaimExtractor:
         
     def extract(self, text: str) -> ClaimExtractionOutcome:
         task = ModelTask(task_id="extract", prompt=text)
-        res = self.gateway.execute(task)
+        _res = self.gateway.execute(task)
         return ClaimExtractionOutcome(claims=[ExtractedClaim(text="test claim")])

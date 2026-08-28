@@ -1,9 +1,15 @@
+from datetime import timezone
 
 from datetime import datetime
-from typing import Optional, List
-from .contracts import ModelTask, ModelExecutionRecord, ModelProvider, ModelOutputViolation
-from .privacy import PrivacyPolicy
+
+from .contracts import (
+    ModelExecutionRecord,
+    ModelProvider,
+    ModelTask,
+)
 from .execution_repository import ModelExecutionRepository
+from .privacy import PrivacyPolicy
+
 
 class FakeModelProvider(ModelProvider):
     def __init__(self, response: str = "fake response"):
@@ -27,7 +33,7 @@ class ModelGateway:
         
         record = ModelExecutionRecord(
             task_id=task.task_id,
-            executed_at=datetime.utcnow(),
+            executed_at=datetime.now(timezone.utc),
             prompt=task.prompt,
             response=response,
             success=True

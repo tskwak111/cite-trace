@@ -13,6 +13,7 @@ class ResolutionWeights:
     version: float = 0.07
     provider_agreement: float = 0.05
 
+
 def weighted_score(features: ResolutionFeatures, weights: ResolutionWeights | None = None) -> float:
     if weights is None:
         weights = ResolutionWeights()
@@ -21,13 +22,13 @@ def weighted_score(features: ResolutionFeatures, weights: ResolutionWeights | No
         return 0.0
 
     score = (
-        features.identifier_score * weights.identifier +
-        features.title_score * weights.title +
-        features.author_score * weights.authors +
-        features.year_score * weights.year +
-        features.venue_score * weights.venue +
-        features.version_score * weights.version +
-        features.provider_agreement_score * weights.provider_agreement
+        features.identifier_score * weights.identifier
+        + features.title_score * weights.title
+        + features.author_score * weights.authors
+        + features.year_score * weights.year
+        + features.venue_score * weights.venue
+        + features.version_score * weights.version
+        + features.provider_agreement_score * weights.provider_agreement
     )
 
     return max(0.0, min(1.0, score))

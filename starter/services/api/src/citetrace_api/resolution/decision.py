@@ -17,11 +17,12 @@ class ResolutionDecision:
     reason_codes: tuple[str, ...]
     requires_human_review: bool
 
+
 def decide_resolution(
     scored_candidates: Sequence[tuple[ProviderCandidate, float, ResolutionFeatures]],
     threshold_accept: float = 0.90,
     threshold_margin: float = 0.08,
-    threshold_ambiguous_floor: float = 0.80
+    threshold_ambiguous_floor: float = 0.80,
 ) -> ResolutionDecision:
     if not scored_candidates:
         return ResolutionDecision(
@@ -31,7 +32,7 @@ def decide_resolution(
             absolute_score=None,
             score_margin=None,
             reason_codes=("no_candidates",),
-            requires_human_review=False
+            requires_human_review=False,
         )
 
     sorted_cands = sorted(scored_candidates, key=lambda x: x[1], reverse=True)
@@ -51,7 +52,7 @@ def decide_resolution(
             absolute_score=top_score,
             score_margin=margin,
             reason_codes=(),
-            requires_human_review=False
+            requires_human_review=False,
         )
     elif top_score >= threshold_ambiguous_floor:
         return ResolutionDecision(
@@ -60,8 +61,10 @@ def decide_resolution(
             selected_work_version_id=None,
             absolute_score=top_score,
             score_margin=margin,
-            reason_codes=("ambiguous_candidates",) if len(sorted_cands) > 1 and margin < threshold_margin else ("needs_review",),
-            requires_human_review=True
+            reason_codes=("ambiguous_candidates",)
+            if len(sorted_cands) > 1 and margin < threshold_margin
+            else ("needs_review",),
+            requires_human_review=True,
         )
     else:
         return ResolutionDecision(
@@ -71,5 +74,5 @@ def decide_resolution(
             absolute_score=top_score,
             score_margin=margin,
             reason_codes=("low_score",),
-            requires_human_review=False
+            requires_human_review=False,
         )

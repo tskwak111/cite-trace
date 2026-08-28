@@ -9,20 +9,24 @@ class WorkIdentity:
     id: UUID
     title: str
 
+
 @dataclass
 class WorkVersionIdentity:
     id: UUID
     work_id: UUID
+
 
 @dataclass
 class CandidateRecord:
     id: str
     reference_entry_id: UUID
 
+
 @dataclass
 class ResolutionRecord:
     reference_entry_id: UUID
     decision: Any
+
 
 class ReferenceRepository:
     def __init__(self, session: Any = None) -> None:
@@ -34,7 +38,9 @@ class ReferenceRepository:
 
     async def add_candidates(self, reference_entry_id: UUID, candidates: Sequence[Any]) -> None:
         for c in candidates:
-            self._candidates.append(CandidateRecord(id=c.provider_record_id, reference_entry_id=reference_entry_id))
+            self._candidates.append(
+                CandidateRecord(id=c.provider_record_id, reference_entry_id=reference_entry_id)
+            )
 
     async def upsert_work_identity(self, identity: WorkIdentity) -> None:
         self._work_identities[identity.id] = identity
@@ -44,6 +50,6 @@ class ReferenceRepository:
 
     async def current_resolution(self, reference_entry_id: UUID) -> Any:
         for res in reversed(self._resolutions):
-            if hasattr(res, 'reference_entry_id') and res.reference_entry_id == reference_entry_id:
+            if hasattr(res, "reference_entry_id") and res.reference_entry_id == reference_entry_id:
                 return res
         return None

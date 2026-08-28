@@ -13,5 +13,5 @@ __all__ = [
     "ProviderCandidate",
     "ProviderHttpClient",
     "ProviderJsonResponse",
-    "ScholarlyMetadataProvider"
+    "ScholarlyMetadataProvider",
 ]

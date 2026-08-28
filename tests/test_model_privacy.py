@@ -1,5 +1,6 @@
 
-from src.models.privacy import PrivacyPolicy, PrivacyDecision
+from src.models.privacy import PrivacyPolicy
+
 
 def test_privacy_policy():
     policy = PrivacyPolicy()

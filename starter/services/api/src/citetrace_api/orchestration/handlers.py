@@ -60,7 +60,9 @@ class DocumentSourceRegisteredHandler:
         has_bibliography = len(refs) > 0
         has_malformed_hierarchy = False
 
-        elements_with_coords = sum(1 for c in clusters if c.coordinates) + sum(1 for r in refs if r.coordinates)
+        elements_with_coords = sum(1 for c in clusters if c.coordinates) + sum(
+            1 for r in refs if r.coordinates
+        )
         total_elements = len(clusters) + len(refs)
         total_citations = len(clusters)
         linked_citations = sum(1 for c in clusters if c.target_reference_xml_ids)
@@ -159,11 +161,13 @@ class DocumentSourceRegisteredHandler:
     ) -> None:
         if hasattr(self.outbox_repo, "add_event"):
             from uuid import UUID
+
             self.outbox_repo.add_event(event_type, UUID(aggregate_id), UUID(workspace_id), payload)
         else:
             from uuid import UUID
 
             from citetrace_api.db.repositories.outbox import NewOutboxEvent
+
             await self.outbox_repo.add(
                 NewOutboxEvent(
                     aggregate_type="source_asset",

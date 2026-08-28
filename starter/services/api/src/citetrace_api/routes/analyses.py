@@ -24,6 +24,7 @@ router = APIRouter(prefix="/v1/analyses", tags=["Analyses"])
 
 def _store(request: Request) -> InMemoryAnalysisStore:
     from typing import cast
+
     return cast(InMemoryAnalysisStore, request.app.state.analysis_store)
 
 

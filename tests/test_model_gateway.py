@@ -1,9 +1,9 @@
 
-import pytest
 from src.models.contracts import ModelTask
-from src.models.gateway import ModelGateway, FakeModelProvider
 from src.models.execution_repository import InMemoryModelExecutionRepository
+from src.models.gateway import FakeModelProvider, ModelGateway
 from src.models.privacy import PrivacyPolicy
+
 
 def test_gateway_execution():
     provider = FakeModelProvider("hello")

@@ -14,6 +14,7 @@ class BibliographicQuery:
     identifiers: Mapping[str, str]
     raw_reference: str
 
+
 @dataclass(frozen=True, slots=True)
 class ProviderCandidate:
     provider: str
@@ -41,23 +42,24 @@ class ProviderCandidate:
         identifiers: Mapping[str, str],
         version_hints: Mapping[str, str] | None = None,
         access_hints: Mapping[str, object] | None = None,
-        raw_snapshot: Mapping[str, object]
+        raw_snapshot: Mapping[str, object],
     ) -> "ProviderCandidate":
         normalized_title = title.strip().lower()
         import re
+
         normalized_title = re.sub(r"\s+", " ", normalized_title)
-        
+
         norm_authors = tuple(a.strip() for a in authors if a.strip())
-        
+
         norm_identifiers = dict(identifiers)
         if "doi" in norm_identifiers:
             doi = norm_identifiers["doi"].strip().lower()
             if doi.startswith("https://doi.org/"):
-                doi = doi[len("https://doi.org/"):]
+                doi = doi[len("https://doi.org/") :]
             elif doi.startswith("http://doi.org/"):
-                doi = doi[len("http://doi.org/"):]
+                doi = doi[len("http://doi.org/") :]
             elif doi.startswith("doi:"):
-                doi = doi[len("doi:"):]
+                doi = doi[len("doi:") :]
             norm_identifiers["doi"] = doi
 
         return cls(
@@ -71,8 +73,9 @@ class ProviderCandidate:
             identifiers=norm_identifiers,
             version_hints=version_hints or {},
             access_hints=access_hints or {},
-            raw_snapshot=raw_snapshot
+            raw_snapshot=raw_snapshot,
         )
+
 
 @dataclass(frozen=True, slots=True)
 class ProviderJsonResponse:

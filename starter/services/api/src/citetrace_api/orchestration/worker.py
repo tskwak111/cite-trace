@@ -57,12 +57,12 @@ class OutboxWorker:
             except Exception:
                 await session.rollback()
                 return 0
-                
+
             if not records:
                 return 0
 
             parsed_docs_repo = ParsedDocumentsRepository(session)
-            
+
             handlers = {
                 ("document.source.registered", "1.0"): DocumentSourceRegisteredHandler(
                     object_store=self.object_store,
@@ -107,6 +107,7 @@ async def main() -> None:
         logger.info("Worker cancelled")
     finally:
         await db.close()
+
 
 if __name__ == "__main__":
     asyncio.run(main())

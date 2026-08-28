@@ -10,6 +10,7 @@ def tei_xml():
     path = Path(__file__).parent / "fixtures" / "grobid-fulltext.tei.xml"
     return path.read_bytes()
 
+
 def test_extract_references(tei_xml):
     reader = TeiReader(tei_xml)
     refs = reader.extract_references()
@@ -23,6 +24,7 @@ def test_extract_references(tei_xml):
     assert ref.identifiers.get("DOI") == "10.1234/test.123"
     assert ref.coordinates == "1,150.0,150.0,300.0,20.0"
 
+
 def test_extract_citation_clusters(tei_xml):
     reader = TeiReader(tei_xml)
     clusters = reader.extract_citation_clusters()
@@ -31,6 +33,7 @@ def test_extract_citation_clusters(tei_xml):
     assert cluster.anchor_text == "[12]"
     assert cluster.target_reference_xml_ids == ["b12"]
     assert cluster.coordinates == "1,100.0,100.0,50.0,20.0"
+
 
 def test_extract_structural_nodes(tei_xml):
     reader = TeiReader(tei_xml)

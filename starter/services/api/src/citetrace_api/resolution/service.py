@@ -13,7 +13,9 @@ class ReferenceResolutionService:
     def __init__(self, providers: Sequence[ScholarlyMetadataProvider]):
         self.providers = providers
 
-    async def resolve(self, query: BibliographicQuery, trace_id: str = "") -> tuple[ResolutionDecision, list[ProviderCandidate]]:
+    async def resolve(
+        self, query: BibliographicQuery, trace_id: str = ""
+    ) -> tuple[ResolutionDecision, list[ProviderCandidate]]:
         if not self.providers:
             return decide_resolution([]), []
 

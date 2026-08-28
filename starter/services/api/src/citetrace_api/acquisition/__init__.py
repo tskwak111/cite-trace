@@ -7,5 +7,5 @@ __all__ = [
     "UrlDenialCode",
     "UrlGuard",
     "UrlValidationError",
-    "ValidatedRemoteLocation"
+    "ValidatedRemoteLocation",
 ]

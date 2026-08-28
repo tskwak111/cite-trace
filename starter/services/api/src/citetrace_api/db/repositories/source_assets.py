@@ -13,7 +13,7 @@ class SourceAsset:
         sha256: str | None = None,
         byte_size: int | None = None,
         object_key: str | None = None,
-        created_at: datetime | None = None
+        created_at: datetime | None = None,
     ):
         self.id = id
         self.workspace_id = workspace_id
@@ -25,12 +25,15 @@ class SourceAsset:
         self.object_key = object_key
         self.created_at = created_at or datetime.utcnow()
 
+
 class SourceAssetRepository:
     def __init__(self, session: object = None) -> None:
         self.session = session
         self._in_memory_store: dict[UUID, SourceAsset] = {}
 
-    async def get_by_work_version(self, workspace_id: UUID, work_version_id: UUID) -> SourceAsset | None:
+    async def get_by_work_version(
+        self, workspace_id: UUID, work_version_id: UUID
+    ) -> SourceAsset | None:
         # Mock implementation for tests
         for asset in self._in_memory_store.values():
             if asset.workspace_id == workspace_id and asset.work_version_id == work_version_id:

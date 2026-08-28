@@ -1,12 +1,13 @@
 
-from typing import Any, Dict, List, Optional
-from pydantic import BaseModel
 from datetime import datetime
+
+from pydantic import BaseModel
+
 
 class ModelTask(BaseModel):
     task_id: str
     prompt: str
-    allowed_artifact_ids: List[str] = []
+    allowed_artifact_ids: list[str] = []
 
 class ModelExecutionRecord(BaseModel):
     task_id: str
@@ -14,7 +15,7 @@ class ModelExecutionRecord(BaseModel):
     prompt: str
     response: str
     success: bool
-    violations: List['ModelOutputViolation'] = []
+    violations: list['ModelOutputViolation'] = []
 
 class ModelOutputViolation(BaseModel):
     rule: str

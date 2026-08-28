@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from enum import Enum
+from typing import Any
 
 from citetrace_api.services.quote_validator import QuoteValidationError, validate_quote
 
@@ -14,7 +15,6 @@ class EvidenceType(Enum):
     abstract_span = "abstract_span"
 
 
-from typing import Any
 
 
 @dataclass(frozen=True)

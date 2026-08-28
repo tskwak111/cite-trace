@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 class ParsedDocumentsRepository:
     def __init__(self, session: AsyncSession):
         self.session = session
-        
+
     async def save_parsed_document(self, doc_data: dict[str, Any]) -> str:
         # Simplified schema definition for the repository
         query = text("""
@@ -18,7 +18,7 @@ class ParsedDocumentsRepository:
         """)
         result = await self.session.execute(query, doc_data)
         return str(result.scalar_one())
-        
+
     async def save_parsed_nodes(self, nodes_data: list[dict[str, Any]]) -> None:
         if not nodes_data:
             return
@@ -27,7 +27,7 @@ class ParsedDocumentsRepository:
             VALUES (:id, :parsed_document_id, :xml_id, :tag, :head, :text_content)
         """)
         await self.session.execute(query, nodes_data)
-        
+
     async def save_reference_entries(self, refs_data: list[dict[str, Any]]) -> None:
         if not refs_data:
             return
@@ -47,7 +47,7 @@ class ParsedDocumentsRepository:
             VALUES (:id, :parsed_document_id, :context_node_id, :anchor_text, :coordinates)
         """)
         await self.session.execute(query, clusters_data)
-        
+
     async def save_citation_anchors(self, anchors_data: list[dict[str, Any]]) -> None:
         if not anchors_data:
             return

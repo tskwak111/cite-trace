@@ -21,7 +21,9 @@ class StageRepository:
     def __init__(self) -> None:
         self._attempts: dict[str, StageAttempt] = {}
 
-    def begin(self, analysis_run_id: UUID | None, stage_name: str, fingerprint: str) -> StageAttempt:
+    def begin(
+        self, analysis_run_id: UUID | None, stage_name: str, fingerprint: str
+    ) -> StageAttempt:
         key = f"{stage_name}:{fingerprint}"
         if key in self._attempts:
             return self._attempts[key]
@@ -32,7 +34,7 @@ class StageRepository:
             stage_name=stage_name,
             fingerprint=fingerprint,
             status="running",
-            created_at=datetime.datetime.now(datetime.UTC)
+            created_at=datetime.datetime.now(datetime.UTC),
         )
         self._attempts[key] = attempt
         return attempt

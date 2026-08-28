@@ -70,7 +70,7 @@ class S3ObjectStore:
 
     async def read(self, key: str) -> bytes:
         response = self._client.get_object(Bucket=self._bucket, Key=key)
-        return bytes(response['Body'].read())
+        return bytes(response["Body"].read())
 
     async def delete(self, key: str) -> None:
         self._client.delete_object(Bucket=self._bucket, Key=key)

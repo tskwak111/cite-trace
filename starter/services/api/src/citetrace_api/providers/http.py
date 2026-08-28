@@ -10,11 +10,11 @@ from citetrace_api.providers.models import ProviderJsonResponse
 
 class ProviderHttpClient:
     def __init__(
-        self, 
-        client: httpx.AsyncClient | None = None, 
-        clock: Callable[[], float] = time.monotonic, 
-        sleeper: Callable[[float], Awaitable[None]] = asyncio.sleep, 
-        max_retries: int = 3
+        self,
+        client: httpx.AsyncClient | None = None,
+        clock: Callable[[], float] = time.monotonic,
+        sleeper: Callable[[float], Awaitable[None]] = asyncio.sleep,
+        max_retries: int = 3,
     ) -> None:
         self.client = client or httpx.AsyncClient()
         self.clock = clock
@@ -33,7 +33,7 @@ class ProviderHttpClient:
     ) -> ProviderJsonResponse:
         attempt = 0
         # safe_headers omitted
-        
+
         while attempt <= self.max_retries:
             start_time = self.clock()
             try:
@@ -43,7 +43,7 @@ class ProviderHttpClient:
                     headers=headers,
                 )
                 latency_ms = int((self.clock() - start_time) * 1000)
-                
+
                 # Check JSON length
                 content = await response.aread()
                 if len(content) > maximum_bytes:
@@ -54,11 +54,11 @@ class ProviderHttpClient:
                         latency_ms=latency_ms,
                         trace_id=trace_id,
                         response_sha256="",
-                        error_code="response_too_large"
+                        error_code="response_too_large",
                     )
 
                 response_sha256 = hashlib.sha256(content).hexdigest()
-                
+
                 if response.status_code == 429 or response.status_code >= 500:
                     if attempt < self.max_retries:
                         retry_after = response.headers.get("retry-after")
@@ -74,9 +74,9 @@ class ProviderHttpClient:
                             latency_ms=latency_ms,
                             trace_id=trace_id,
                             response_sha256=response_sha256,
-                            error_code="provider_error"
+                            error_code="provider_error",
                         )
-                
+
                 if 400 <= response.status_code < 500:
                     return ProviderJsonResponse(
                         status_code=response.status_code,
@@ -85,7 +85,7 @@ class ProviderHttpClient:
                         latency_ms=latency_ms,
                         trace_id=trace_id,
                         response_sha256=response_sha256,
-                        error_code="client_error" if response.status_code != 404 else "not_found"
+                        error_code="client_error" if response.status_code != 404 else "not_found",
                     )
 
                 # Validate JSON
@@ -99,9 +99,9 @@ class ProviderHttpClient:
                         latency_ms=latency_ms,
                         trace_id=trace_id,
                         response_sha256=response_sha256,
-                        error_code="invalid_json"
+                        error_code="invalid_json",
                     )
-                    
+
                 return ProviderJsonResponse(
                     status_code=response.status_code,
                     data=data,
@@ -109,9 +109,9 @@ class ProviderHttpClient:
                     latency_ms=latency_ms,
                     trace_id=trace_id,
                     response_sha256=response_sha256,
-                    error_code=None
+                    error_code=None,
                 )
-                
+
             except httpx.TimeoutException:
                 latency_ms = int((self.clock() - start_time) * 1000)
                 if attempt < self.max_retries:
@@ -125,7 +125,7 @@ class ProviderHttpClient:
                     latency_ms=latency_ms,
                     trace_id=trace_id,
                     response_sha256="",
-                    error_code="timeout"
+                    error_code="timeout",
                 )
             except httpx.RequestError:
                 latency_ms = int((self.clock() - start_time) * 1000)
@@ -140,9 +140,9 @@ class ProviderHttpClient:
                     latency_ms=latency_ms,
                     trace_id=trace_id,
                     response_sha256="",
-                    error_code="request_error"
+                    error_code="request_error",
                 )
-        
+
         # fallback
         return ProviderJsonResponse(
             status_code=0,
@@ -151,5 +151,5 @@ class ProviderHttpClient:
             latency_ms=0,
             trace_id=trace_id,
             response_sha256="",
-            error_code="unknown"
+            error_code="unknown",
         )

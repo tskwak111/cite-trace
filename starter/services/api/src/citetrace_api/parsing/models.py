@@ -8,6 +8,7 @@ class GrobidParseResult:
     status: str
     timings_ms: dict[str, int]
 
+
 @dataclass
 class ParsedDocumentRecord:
     id: str

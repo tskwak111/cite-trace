@@ -153,11 +153,11 @@ async def get_document(
     # We can query the Outbox and ParsedDocuments to infer state
     outbox = request.app.state.in_memory_outbox
     events = outbox.events_for_aggregate(source_asset_id)
-    
+
     status = "registered"
     quality_grade = None
     limitations = None
-    
+
     for e in events:
         t = e["event_type"]
         if t == "document.parsing.failed":
@@ -170,14 +170,16 @@ async def get_document(
         elif t == "document.parsed":
             status = "parsed"
             quality_grade = e["payload"]["quality_grade"]
-            
-    if status == "registered" and any(e["event_type"] == "document.source.registered" for e in events):
+
+    if status == "registered" and any(
+        e["event_type"] == "document.source.registered" for e in events
+    ):
         # We can assume it's parsing if registered but not parsed/failed
         status = "parsing"
-            
+
     return DocumentStatusResponse(
         status=status,
         latest_quality_grade=quality_grade,
         limitations=limitations,
-        access_level="user_private_full_text"
+        access_level="user_private_full_text",
     )

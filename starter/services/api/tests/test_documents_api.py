@@ -45,8 +45,6 @@ startxref
 """
 
 
-
-
 @pytest.fixture
 def client() -> Generator[TestClient]:
     with TestClient(app) as client:

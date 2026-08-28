@@ -35,7 +35,6 @@ class AnalysisRepository:
 
     async def create(self, analysis: NewAnalysis) -> AnalysisRecord:
 
-
         # We need to fetch the existing record first to check the fingerprint if we want to raise an error
         # A simple way is to insert DO NOTHING, then select.
 

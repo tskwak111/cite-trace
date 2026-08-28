@@ -539,6 +539,47 @@ components:
           type: array
           items:
             type: string
+
+    ReferenceResolutionSummary:
+      type: object
+      additionalProperties: false
+      required:
+      - total_references
+      - resolved
+      - ambiguous
+      - unresolved
+      properties:
+        total_references:
+          type: integer
+          minimum: 0
+        resolved:
+          type: integer
+          minimum: 0
+        ambiguous:
+          type: integer
+          minimum: 0
+        unresolved:
+          type: integer
+          minimum: 0
+
+    SourceAccessSummary:
+      type: object
+      additionalProperties: false
+      required:
+      - full_text_available
+      - abstract_only
+      - not_accessible
+      properties:
+        full_text_available:
+          type: integer
+          minimum: 0
+        abstract_only:
+          type: integer
+          minimum: 0
+        not_accessible:
+          type: integer
+          minimum: 0
+
     AnalysisLinks:
       type: object
       additionalProperties: false
@@ -586,7 +627,17 @@ components:
           $ref: '#/components/schemas/Audience'
         progress:
           $ref: '#/components/schemas/AnalysisProgress'
+
+        reference_summary:
+          allOf:
+          - $ref: '#/components/schemas/ReferenceResolutionSummary'
+          nullable: true
+        access_summary:
+          allOf:
+          - $ref: '#/components/schemas/SourceAccessSummary'
+          nullable: true
         limitations:
+
           type: array
           items:
             $ref: '#/components/schemas/Limitation'

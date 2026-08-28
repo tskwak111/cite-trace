@@ -57,3 +57,12 @@ class ParsedDocumentsRepository:
             VALUES (:id, :cluster_id, :reference_entry_id)
         """)
         await self.session.execute(query, anchors_data)
+
+    async def get_reference_entries(self, parsed_document_id: str) -> list[dict[str, Any]]:
+        query = text("""
+            SELECT id, xml_id, local_label, raw_reference, title, year, venue, identifiers, coordinates 
+            FROM reference_entries 
+            WHERE parsed_document_id = :parsed_document_id
+        """)
+        result = await self.session.execute(query, {"parsed_document_id": parsed_document_id})
+        return [dict(row._mapping) for row in result.fetchall()]

@@ -122,12 +122,6 @@ events:
     aggregate_type: evidence_link
     payload:
       required: [feedback_event_id, category, verdict]
-consumer_rules:
-  - Consumers must ignore unknown optional fields.
-  - Consumers must reject unsupported major schema versions.
-  - Event handlers must be idempotent by event_id and semantic idempotency_key.
-  - Payloads must not contain raw private document text unless a dedicated encrypted channel and policy explicitly allow it.
-  - Facts are immutable; corrections create new events and supersession records.
   - name: document.source.registered
     version: "1.0"
     kind: fact
@@ -139,3 +133,25 @@ consumer_rules:
     aggregate_type: reference_entry
     payload:
       required: [resolution_id, selected_candidate_id, reason]
+  - name: analysis.references.ready
+    kind: fact
+    aggregate_type: analysis_run
+    payload:
+      required: [analysis_id, total_references, resolved, ambiguous, unresolved, full_text_available, abstract_only, not_accessible, limitations]
+  - name: document.references.resolved
+    kind: fact
+    aggregate_type: source_asset
+    payload:
+      required: [parsed_document_id, reference_pipeline_result]
+  - name: document.references.limited
+    kind: fact
+    aggregate_type: source_asset
+    payload:
+      required: [parsed_document_id, limitation_reasons]
+
+consumer_rules:
+  - Consumers must ignore unknown optional fields.
+  - Consumers must reject unsupported major schema versions.
+  - Event handlers must be idempotent by event_id and semantic idempotency_key.
+  - Payloads must not contain raw private document text unless a dedicated encrypted channel and policy explicitly allow it.
+  - Facts are immutable; corrections create new events and supersession records.

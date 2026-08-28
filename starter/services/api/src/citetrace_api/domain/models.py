@@ -46,6 +46,18 @@ class Limitation(StrictModel):
     recoverable_actions: list[str] = Field(default_factory=list)
 
 
+
+class ReferenceResolutionSummary(StrictModel):
+    total_references: int = 0
+    resolved: int = 0
+    ambiguous: int = 0
+    unresolved: int = 0
+
+class SourceAccessSummary(StrictModel):
+    full_text_available: int = 0
+    abstract_only: int = 0
+    not_accessible: int = 0
+
 class AnalysisLinks(StrictModel):
     self: str
     stream: str
@@ -60,6 +72,8 @@ class Analysis(StrictModel):
     mode: AnalysisMode
     audience: Audience
     progress: AnalysisProgress
+    reference_summary: ReferenceResolutionSummary | None = None
+    access_summary: SourceAccessSummary | None = None
     limitations: list[Limitation] = Field(default_factory=list)
     created_at: datetime
     updated_at: datetime

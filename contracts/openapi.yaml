@@ -211,6 +211,57 @@ paths:
           $ref: '#/components/responses/NotFound'
         '422':
           $ref: '#/components/responses/Unprocessable'
+  /v1/documents:
+    post:
+      tags:
+      - Documents
+      operationId: uploadDocument
+      parameters:
+      - name: X-Workspace-Id
+        in: header
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        '201':
+          description: Uploaded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SourceAssetResponse'
+        '413':
+          description: Payload too large
+        '415':
+          description: Unsupported media type
+        '422':
+          description: Validation error
+  /v1/documents/{source_asset_id}:
+    get:
+      tags:
+      - Documents
+      operationId: getDocument
+      parameters:
+      - name: source_asset_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        '200':
+          description: OK
 components:
   securitySchemes:
     bearerAuth:
@@ -267,6 +318,42 @@ components:
         service:
           const: citetrace-api
         version:
+          type: string
+    SourceAssetResponse:
+      type: object
+      required:
+      - id
+      - workspace_id
+      - sha256
+      - media_type
+      - byte_size
+      - access_level
+      - security_scan_status
+      - created_at
+      properties:
+        id:
+          type: string
+          format: uuid
+        workspace_id:
+          type: string
+          format: uuid
+        sha256:
+          type: string
+        media_type:
+          type: string
+        byte_size:
+          type: integer
+        access_level:
+          type: string
+        security_scan_status:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+    PdfValidationProblem:
+      type: object
+      properties:
+        code:
           type: string
     AnalysisMode:
       type: string

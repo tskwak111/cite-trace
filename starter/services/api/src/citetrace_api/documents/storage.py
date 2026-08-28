@@ -23,6 +23,7 @@ def source_object_key(workspace_id: UUID, sha256_hex: str) -> str:
 
 class FakeObjectStore:
     """In-memory object store for testing — never use in production."""
+
     def __init__(self) -> None:
         self._store: dict[str, bytes] = {}
 
@@ -43,8 +44,10 @@ class FakeObjectStore:
 
 class S3ObjectStore:
     """S3-compatible immutable object store."""
+
     def __init__(self, endpoint_url: str, bucket: str, access_key: str, secret_key: str) -> None:
-        import boto3
+        import boto3  # type: ignore[import-untyped]
+
         self._client = boto3.client(
             "s3",
             endpoint_url=endpoint_url,
@@ -54,19 +57,20 @@ class S3ObjectStore:
         self._bucket = bucket
 
     async def put_if_absent(self, key: str, data: bytes, media_type: str) -> PutResult:
-        import botocore.exceptions
+        import botocore.exceptions  # type: ignore[import-untyped]
+
         try:
             self._client.head_object(Bucket=self._bucket, Key=key)
             return PutResult(key=key, created=False)
         except botocore.exceptions.ClientError as e:
-            if e.response['Error']['Code'] != '404':
+            if e.response["Error"]["Code"] != "404":
                 raise
         self._client.put_object(Bucket=self._bucket, Key=key, Body=data, ContentType=media_type)
         return PutResult(key=key, created=True)
 
     async def read(self, key: str) -> bytes:
         response = self._client.get_object(Bucket=self._bucket, Key=key)
-        return response['Body'].read()
+        return bytes(response['Body'].read())
 
     async def delete(self, key: str) -> None:
         self._client.delete_object(Bucket=self._bucket, Key=key)

@@ -23,7 +23,8 @@ router = APIRouter(prefix="/v1/analyses", tags=["Analyses"])
 
 
 def _store(request: Request) -> InMemoryAnalysisStore:
-    return request.app.state.analysis_store
+    from typing import cast
+    return cast(InMemoryAnalysisStore, request.app.state.analysis_store)
 
 
 def _problem(status_code: int, title: str, code: str, detail: str) -> ProblemException:

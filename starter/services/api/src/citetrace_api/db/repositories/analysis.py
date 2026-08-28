@@ -34,21 +34,11 @@ class AnalysisRepository:
         self.session = session
 
     async def create(self, analysis: NewAnalysis) -> AnalysisRecord:
-        query = text("""
-            INSERT INTO citetrace.analysis_run (
-                workspace_id, idempotency_key, fingerprint, status
-            )
-            VALUES (
-                :workspace_id, :idempotency_key, :fingerprint, 'pending'
-            )
-            ON CONFLICT (workspace_id, idempotency_key) DO UPDATE
-            SET updated_at = CURRENT_TIMESTAMP
-            RETURNING id, workspace_id, idempotency_key, fingerprint, status, created_at, updated_at
-        """)
-        
+
+
         # We need to fetch the existing record first to check the fingerprint if we want to raise an error
         # A simple way is to insert DO NOTHING, then select.
-        
+
         insert_query = text("""
             INSERT INTO citetrace.analysis_run (
                 workspace_id, idempotency_key, fingerprint, status
@@ -59,16 +49,16 @@ class AnalysisRepository:
             ON CONFLICT (workspace_id, idempotency_key) DO NOTHING
             RETURNING id, workspace_id, idempotency_key, fingerprint, status, created_at, updated_at
         """)
-        
+
         params = {
             "workspace_id": str(analysis.workspace_id),
             "idempotency_key": analysis.idempotency_key,
             "fingerprint": analysis.fingerprint,
         }
-        
+
         result = await self.session.execute(insert_query, params)
         row = result.fetchone()
-        
+
         if row is None:
             # Conflict occurred and DO NOTHING triggered
             select_query = text("""
@@ -78,13 +68,15 @@ class AnalysisRepository:
             """)
             result = await self.session.execute(select_query, params)
             row = result.fetchone()
-            
+
             if row is not None and row.fingerprint != analysis.fingerprint:
-                raise IdempotencyConflictError("Idempotency key already used with a different fingerprint")
+                raise IdempotencyConflictError(
+                    "Idempotency key already used with a different fingerprint"
+                )
 
         if row is None:
             raise RuntimeError("Failed to create or retrieve analysis record")
-                
+
         return AnalysisRecord(
             id=row.id,
             workspace_id=row.workspace_id,
@@ -105,7 +97,7 @@ class AnalysisRepository:
         row = result.fetchone()
         if row is None:
             return None
-            
+
         return AnalysisRecord(
             id=row.id,
             workspace_id=row.workspace_id,

@@ -121,3 +121,4 @@ class ProblemDetails(StrictModel):
     instance: str | None = None
     trace_id: str = Field(default_factory=lambda: uuid4().hex)
     retryable: bool = False
+    recoverable_actions: list[str] = Field(default_factory=list)

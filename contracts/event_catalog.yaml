@@ -118,3 +118,9 @@ consumer_rules:
   - Event handlers must be idempotent by event_id and semantic idempotency_key.
   - Payloads must not contain raw private document text unless a dedicated encrypted channel and policy explicitly allow it.
   - Facts are immutable; corrections create new events and supersession records.
+  - name: document.source.registered
+    version: "1.0"
+    kind: fact
+    aggregate_type: source_asset
+    payload:
+      required: [source_asset_id, workspace_id, sha256, byte_size, acquisition_method]

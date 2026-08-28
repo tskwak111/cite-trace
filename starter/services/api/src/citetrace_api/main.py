@@ -6,8 +6,11 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
 from citetrace_api import __version__
+from citetrace_api.documents.storage import FakeObjectStore
 from citetrace_api.domain.errors import ProblemException
+from citetrace_api.orchestration.outbox import InMemoryOutbox
 from citetrace_api.routes.analyses import router as analyses_router
+from citetrace_api.routes.documents import router as documents_router
 from citetrace_api.routes.health import router as health_router
 from citetrace_api.services.job_store import InMemoryAnalysisStore
 
@@ -15,6 +18,9 @@ from citetrace_api.services.job_store import InMemoryAnalysisStore
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     app.state.analysis_store = InMemoryAnalysisStore()
+    app.state.fake_object_store = FakeObjectStore()
+    app.state.in_memory_outbox = InMemoryOutbox()
+    app.state.upload_idempotency = {}
     yield
 
 
@@ -26,6 +32,7 @@ app = FastAPI(
 )
 app.include_router(health_router)
 app.include_router(analyses_router)
+app.include_router(documents_router)
 
 
 @app.exception_handler(ProblemException)

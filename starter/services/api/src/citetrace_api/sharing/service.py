@@ -1,6 +1,6 @@
 import secrets
-import uuid
 import typing
+import uuid
 from datetime import datetime, timedelta
 
 

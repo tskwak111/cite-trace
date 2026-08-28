@@ -1,5 +1,7 @@
 from uuid import uuid4
+
 from fastapi.testclient import TestClient
+
 from citetrace_api.main import app
 
 client = TestClient(app)

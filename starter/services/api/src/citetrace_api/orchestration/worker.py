@@ -1,14 +1,17 @@
 import asyncio
 import logging
+from typing import Any
 
 from citetrace_api.config import get_settings
 from citetrace_api.db.repositories.outbox import OutboxRepository
 from citetrace_api.db.repositories.parsed_documents import ParsedDocumentsRepository
 from citetrace_api.db.session import Database
 from citetrace_api.documents.storage import S3ObjectStore
-from citetrace_api.orchestration.evidence_handlers import EvidencePipeline
-from citetrace_api.orchestration.handlers import (
+from citetrace_api.orchestration.evidence_handlers import (
     AnalysisReferencesReadyHandler,
+    EvidencePipeline,
+)
+from citetrace_api.orchestration.handlers import (
     DocumentSourceRegisteredHandler,
 )
 from citetrace_api.parsing.grobid_client import GrobidClient
@@ -68,7 +71,7 @@ class OutboxWorker:
             parsed_docs_repo = ParsedDocumentsRepository(session)
 
             evidence_pipeline = EvidencePipeline(outbox_repo=outbox_repo)
-            handlers = {
+            handlers: dict[tuple[str, str], Any] = {
                 ("analysis.references.ready", "1.0"): AnalysisReferencesReadyHandler(evidence_pipeline=evidence_pipeline),
                 ("document.source.registered", "1.0"): DocumentSourceRegisteredHandler(
                     object_store=self.object_store,

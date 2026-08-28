@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import UTC, datetime
 from uuid import UUID
 
 
@@ -23,7 +23,7 @@ class SourceAsset:
         self.sha256 = sha256
         self.byte_size = byte_size
         self.object_key = object_key
-        self.created_at = created_at or datetime.utcnow()
+        self.created_at = created_at or datetime.now(UTC)
 
 
 class SourceAssetRepository:

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xmlns="http://www.tei-c.org/ns/1.0" 
+     xmlns:xlink="http://www.w3.org/1999/xlink">
+    <teiHeader>
+        <fileDesc>
+            <titleStmt>
+                <title level="a" type="main">Example Paper Title</title>
+                <author>
+                    <persName><forename type="first">Jane</forename><surname>Doe</surname></persName>
+                </author>
+            </titleStmt>
+        </fileDesc>
+    </teiHeader>
+    <text>
+        <body>
+            <div xml:id="sec1">
+                <head n="1">Introduction</head>
+                <p>This is some text with a citation <ref type="bibr" target="#b12" coords="1,100.0,100.0,50.0,20.0">[12]</ref> inline.</p>
+            </div>
+        </body>
+        <back>
+            <listBibl>
+                <biblStruct xml:id="b12" coords="1,150.0,150.0,300.0,20.0">
+                    <analytic>
+                        <title level="a" type="main">Cited Paper Title</title>
+                        <author><persName><forename type="first">John</forename><surname>Smith</surname></persName></author>
+                    </analytic>
+                    <monogr>
+                        <title level="j">Journal of Testing</title>
+                        <imprint>
+                            <date type="published" when="2020">2020</date>
+                        </imprint>
+                    </monogr>
+                    <idno type="DOI">10.1234/test.123</idno>
+                </biblStruct>
+            </listBibl>
+        </back>
+    </text>
+</TEI>

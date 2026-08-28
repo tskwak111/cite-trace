@@ -1,3 +1,4 @@
+from collections.abc import Generator
 from uuid import UUID
 
 import pytest
@@ -44,11 +45,10 @@ startxref
 """
 
 
-from collections.abc import Generator
 
 
 @pytest.fixture
-def client() -> Generator[TestClient, None, None]:
+def client() -> Generator[TestClient]:
     with TestClient(app) as client:
         yield client
 

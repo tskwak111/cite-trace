@@ -1,0 +1,6 @@
+profiles:
+  default:
+    publish_thresholds:
+      verified: 0.86
+      limited: 0.55
+

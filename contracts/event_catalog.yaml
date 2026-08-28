@@ -155,3 +155,23 @@ consumer_rules:
   - Event handlers must be idempotent by event_id and semantic idempotency_key.
   - Payloads must not contain raw private document text unless a dedicated encrypted channel and policy explicitly allow it.
   - Facts are immutable; corrections create new events and supersession records.
+  - name: analysis.claims.extracted
+    kind: fact
+    aggregate_type: analysis_run
+    payload:
+      required: [analysis_id, total_claims]
+  - name: analysis.evidence.retrieved
+    kind: fact
+    aggregate_type: analysis_run
+    payload:
+      required: [analysis_id, total_candidates]
+  - name: analysis.relations.verified
+    kind: fact
+    aggregate_type: analysis_run
+    payload:
+      required: [analysis_id, verified_relations]
+  - name: analysis.completed_with_limits
+    kind: fact
+    aggregate_type: analysis_run
+    payload:
+      required: [status, evidence_link_count, limitation_count, limits]

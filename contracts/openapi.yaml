@@ -140,6 +140,69 @@ paths:
                     - 'null'
         '404':
           $ref: '#/components/responses/NotFound'
+  /v1/analyses/{analysis_id}/reference-map:
+    get:
+      tags:
+      - Evidence
+      operationId: getReferenceMap
+      parameters:
+      - $ref: '#/components/parameters/AnalysisId'
+      responses:
+        '200':
+          description: Reference map for the analysis
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total_count:
+                    type: integer
+                  in_scope_count:
+                    type: integer
+                  references:
+                    type: array
+                    items:
+                      type: object
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /v1/source-spans/{source_span_id}/locator:
+    get:
+      tags:
+      - Evidence
+      operationId: getSourceSpanLocator
+      parameters:
+      - name: source_span_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        '200':
+          description: Source span locator
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  page:
+                    type: integer
+                  boundingBoxes:
+                    type: array
+                    items:
+                      type: object
+                  startOffset:
+                    type: integer
+                  endOffset:
+                    type: integer
+                  sectionPath:
+                    type: array
+                    items:
+                      type: string
+                  asset_view_token:
+                    type: string
+        '404':
+          $ref: '#/components/responses/NotFound'
   /v1/analyses/{analysis_id}/stream:
     get:
       tags:

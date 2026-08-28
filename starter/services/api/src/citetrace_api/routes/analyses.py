@@ -85,26 +85,6 @@ async def cancel_analysis(
         ) from exc
 
 
-@router.get("/{analysis_id}/evidence-links", response_model=EvidenceLinkPage)
-async def list_evidence_links(
-    analysis_id: UUID,
-    request: Request,
-    relation: EvidenceRelation | None = Query(default=None),
-    evidence_status: EvidenceLinkStatus | None = Query(default=None, alias="status"),
-    limit: int = Query(default=50, ge=1, le=100),
-    cursor: str | None = Query(default=None),
-) -> EvidenceLinkPage:
-    del relation, evidence_status, limit, cursor
-    try:
-        await _store(request).get(analysis_id)
-    except AnalysisNotFoundError as exc:
-        raise _problem(
-            status.HTTP_404_NOT_FOUND,
-            "Analysis not found",
-            "analysis_not_found",
-            "The analysis does not exist or is not visible to this actor.",
-        ) from exc
-    return EvidenceLinkPage()
 
 
 @router.get("/{analysis_id}/stream")

@@ -1,0 +1,2 @@
+class ReadModelRepository:
+    pass

@@ -26,7 +26,7 @@ for (const file of walk(webRoot)) {
     fileName: file,
     reportDiagnostics: true,
     compilerOptions: {
-      target: ts.ScriptTarget.ES2022,
+      target: ts.ScriptTarget.ESNext,
       module: ts.ModuleKind.ESNext,
       jsx: ts.JsxEmit.ReactJSX,
       isolatedModules: true,

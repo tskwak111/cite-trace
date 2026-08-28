@@ -1,5 +1,9 @@
-import { ReaderShell } from "@/components/ReaderShell";
+import { ReaderWorkspace } from '../features/reader/ReaderWorkspace';
 
 export default function Home() {
-  return <ReaderShell />;
+  return (
+    <main className="min-h-screen bg-gray-50">
+      <ReaderWorkspace />
+    </main>
+  );
 }

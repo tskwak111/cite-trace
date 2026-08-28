@@ -1,6 +1,6 @@
 from functools import lru_cache
 
-from pydantic import Field
+from pydantic import Field, SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -34,6 +34,17 @@ class Settings(BaseSettings):
     grobid_read_timeout_seconds: float = 120.0
     grobid_max_attempts: int = 3
     grobid_max_response_bytes: int = 52428800
+
+    crossref_base_url: str = "https://api.crossref.org"
+    crossref_contact_email: str | None = None
+    openalex_base_url: str = "https://api.openalex.org"
+    openalex_contact_email: str | None = None
+    semantic_scholar_base_url: str = "https://api.semanticscholar.org"
+    semantic_scholar_api_key: SecretStr | None = None
+    provider_http_timeout_seconds: float = 10.0
+    provider_http_max_retries: int = 3
+    provider_http_max_response_bytes: int = 10_485_760
+    provider_http_rate_limit_per_second: float = 5.0
 
 
 @lru_cache

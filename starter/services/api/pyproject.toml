@@ -17,6 +17,9 @@ dependencies = [
   "boto3>=1.40,<2",
   "pypdf>=6,<7",
   "python-multipart>=0.0.20,<1",
+  "httpx>=0.28,<1",
+  "defusedxml>=0.7,<1",
+  "lxml>=6,<7",
 ]
 
 [project.optional-dependencies]
@@ -28,6 +31,9 @@ dev = [
   "ruff>=0.12,<1",
   "anyio[asyncio]>=4.8,<5",
   "pytest-anyio>=0.0.0,<1",
+  "respx>=0.22,<1",
+  "types-defusedxml",
+  "lxml-stubs",
 ]
 
 [tool.setuptools.packages.find]

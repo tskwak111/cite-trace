@@ -1,0 +1,14 @@
+{
+  "title": "Analysis Overview",
+  "panels": [
+    {
+      "type": "timeseries",
+      "title": "Analysis Created",
+      "targets": [
+        {
+          "expr": "sum(rate(analysis_created_total[5m]))"
+        }
+      ]
+    }
+  ]
+}

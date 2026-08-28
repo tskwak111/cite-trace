@@ -1,0 +1,26 @@
+groups:
+  - name: citetrace
+    rules:
+      - alert: AnalysisStalled
+        expr: rate(analysis_created_total[5m]) > 0 and rate(analysis_completed_total[5m]) == 0
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: Analyses are stalling
+
+      - alert: HighFailureRate
+        expr: rate(analysis_failed_total[5m]) / rate(analysis_created_total[5m]) > 0.1
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: High analysis failure rate
+
+      - alert: QuoteValidationFailures
+        expr: rate(quote_validation_failures_total[5m]) > 10
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: High quote validation failures

@@ -67,6 +67,16 @@ events:
     aggregate_type: source_asset
     payload:
       required: [parsed_document_id, parser_version, quality_grade]
+  - name: document.parsing.limited
+    kind: fact
+    aggregate_type: source_asset
+    payload:
+      required: [parsed_document_id, parser_version, quality_grade, limitation_reason]
+  - name: document.parsing.failed
+    kind: fact
+    aggregate_type: source_asset
+    payload:
+      required: [failure_reason]
   - name: reference.resolved
     kind: fact
     aggregate_type: reference_entry

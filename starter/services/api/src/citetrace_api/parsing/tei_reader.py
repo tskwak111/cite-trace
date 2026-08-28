@@ -1,7 +1,7 @@
 from dataclasses import dataclass
+from typing import Any, cast
 
 from lxml import etree
-from typing import Any, cast
 
 NS = {"tei": "http://www.tei-c.org/ns/1.0"}
 

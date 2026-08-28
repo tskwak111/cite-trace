@@ -58,25 +58,30 @@ startxref
 %%EOF
 """
 
+
 def test_accepts_small_born_digital_pdf():
     report = validate_pdf(_MINIMAL_TEXT_PDF)
     assert report.accepted is True
     assert report.code == PdfValidationCode.ACCEPTED
+
 
 def test_rejects_image_only_pdf_without_ocr():
     report = validate_pdf(_IMAGE_ONLY_PDF)
     assert report.accepted is False
     assert report.code == PdfValidationCode.IMAGE_ONLY_UNSUPPORTED
 
+
 def test_rejects_invalid_magic_bytes():
     report = validate_pdf(b"Not a PDF")
     assert report.accepted is False
     assert report.code == PdfValidationCode.INVALID_MAGIC
 
+
 def test_rejects_byte_limit_exceeded():
     report = validate_pdf(b"a" * (MAX_BYTE_COUNT + 1))
     assert report.accepted is False
     assert report.code == PdfValidationCode.BYTE_LIMIT_EXCEEDED
+
 
 def test_rejects_page_limit_exceeded():
     # pypdf parsing of large page counts would take effort to mock or generate.

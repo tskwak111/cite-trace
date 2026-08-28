@@ -1,0 +1,99 @@
+version: 1.0.0
+profiles:
+  private_strict:
+    description: No document text leaves the private deployment boundary.
+    tasks:
+      claim_extraction:
+        provider: private
+        model: local-structured-small
+        temperature: 0
+        max_output_tokens: 3000
+      relation_verification:
+        provider: private
+        model: local-reasoning-large
+        temperature: 0
+        max_output_tokens: 5000
+      explanation:
+        provider: private
+        model: local-writing-large
+        temperature: 0.2
+        max_output_tokens: 4000
+  balanced:
+    description: Private text may be sent only to approved no-training endpoints under workspace policy.
+    tasks:
+      claim_extraction:
+        provider: approved_primary
+        model: structured-fast
+        fallback_models: [structured-accurate]
+        temperature: 0
+        max_output_tokens: 3000
+      citation_intent:
+        provider: approved_primary
+        model: structured-fast
+        fallback_models: [structured-accurate]
+        temperature: 0
+        max_output_tokens: 1800
+      reference_resolution_fallback:
+        provider: approved_primary
+        model: structured-fast
+        fallback_models: []
+        temperature: 0
+        max_output_tokens: 2200
+      evidence_query_planning:
+        provider: approved_primary
+        model: structured-fast
+        fallback_models: [structured-accurate]
+        temperature: 0
+        max_output_tokens: 2400
+      relation_verification:
+        provider: approved_primary
+        model: reasoning-accurate
+        fallback_models: [private-reasoning-large]
+        temperature: 0
+        max_output_tokens: 5000
+      transformation_analysis:
+        provider: approved_primary
+        model: reasoning-accurate
+        fallback_models: [private-reasoning-large]
+        temperature: 0
+        max_output_tokens: 4500
+      relationship_summary:
+        provider: approved_primary
+        model: writing-accurate
+        fallback_models: [private-writing-large]
+        temperature: 0.15
+        max_output_tokens: 4200
+      beginner_explanation:
+        provider: approved_primary
+        model: writing-accurate
+        fallback_models: [private-writing-large]
+        temperature: 0.2
+        max_output_tokens: 4200
+      quality_audit:
+        provider: approved_secondary
+        model: reasoning-accurate
+        fallback_models: [private-reasoning-large]
+        temperature: 0
+        max_output_tokens: 5000
+providers:
+  approved_primary:
+    document_text_allowed: true
+    training_opt_out_required: true
+    retention_days_max: 0
+    regions: [kr, jp, sg]
+  approved_secondary:
+    document_text_allowed: true
+    training_opt_out_required: true
+    retention_days_max: 0
+    regions: [kr, jp, sg]
+  private:
+    document_text_allowed: true
+    training_opt_out_required: false
+    retention_days_max: 0
+    regions: [private]
+quality_rules:
+  maximum_schema_repair_attempts: 1
+  maximum_model_retries_per_task: 2
+  disallow_same_model_for_generation_and_final_audit: true
+  require_prompt_and_model_version_on_every_execution: true
+  block_unvalidated_structured_output: true

@@ -1,0 +1,46 @@
+version: 1.0.0
+kind: citation_intent
+multi_label: true
+values:
+  - id: background
+    display_name_ko: 배경지식
+    display_name_en: Background
+  - id: definition
+    display_name_ko: 정의·개념
+    display_name_en: Definition
+  - id: problem_framing
+    display_name_ko: 문제 제기
+    display_name_en: Problem framing
+  - id: method_adoption
+    display_name_ko: 방법 채택
+    display_name_en: Method adoption
+  - id: method_extension
+    display_name_ko: 방법 확장
+    display_name_en: Method extension
+  - id: dataset_use
+    display_name_ko: 데이터셋 사용
+    display_name_en: Dataset use
+  - id: metric_use
+    display_name_ko: 평가지표 사용
+    display_name_en: Metric use
+  - id: benchmark_comparison
+    display_name_ko: 비교 기준
+    display_name_en: Benchmark comparison
+  - id: result_support
+    display_name_ko: 결과 지지 근거
+    display_name_en: Result support
+  - id: result_contrast
+    display_name_ko: 결과 대조
+    display_name_en: Result contrast
+  - id: limitation
+    display_name_ko: 한계
+    display_name_en: Limitation
+  - id: future_direction
+    display_name_ko: 향후 방향
+    display_name_en: Future direction
+  - id: tool_or_software_use
+    display_name_ko: 도구·소프트웨어 사용
+    display_name_en: Tool or software use
+  - id: perfunctory_mention
+    display_name_ko: 대표 예시·단순 언급
+    display_name_en: Perfunctory mention

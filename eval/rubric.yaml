@@ -1,0 +1,88 @@
+version: 1.0.0
+release_policy:
+  blocking_metrics:
+    fabricated_quote_count:
+      operator: eq
+      threshold: 0
+    schema_valid_rate:
+      operator: gte
+      threshold: 1.0
+    cross_tenant_access_failures:
+      operator: eq
+      threshold: 0
+    inaccessible_source_false_full_text_claims:
+      operator: eq
+      threshold: 0
+    unsupported_material_statement_rate:
+      operator: lte
+      threshold: 0.02
+  quality_targets:
+    citation_anchor_precision:
+      operator: gte
+      threshold: 0.98
+    citation_anchor_recall:
+      operator: gte
+      threshold: 0.95
+    reference_resolution_top1_accuracy:
+      operator: gte
+      threshold: 0.92
+    evidence_recall_at_5:
+      operator: gte
+      threshold: 0.85
+    relation_macro_f1:
+      operator: gte
+      threshold: 0.75
+    inaccessible_abstention_accuracy:
+      operator: gte
+      threshold: 0.95
+    human_usefulness_mean:
+      operator: gte
+      threshold: 4.0
+      scale: [1, 5]
+annotation_dimensions:
+  claim_boundary:
+    labels: [correct, minor_error, major_error, not_applicable]
+    major_error_definition: Missing or adding content that changes the proposition or scope.
+  reference_resolution:
+    labels: [exact_version, correct_work_wrong_or_uncertain_version, ambiguous, unresolved, incorrect]
+  evidence_relevance:
+    labels: [direct, partial, contextual, irrelevant, inaccessible]
+  evidence_completeness:
+    labels: [sufficient, missing_qualifier, missing_counterevidence, insufficient, not_applicable]
+  relation_correctness:
+    labels:
+      - direct_support
+      - partial_support
+      - indirect_support
+      - contradicts
+      - overgeneralized
+      - scope_mismatch
+      - no_relevant_evidence
+      - insufficient_evidence
+      - inaccessible_source
+  transformation_correctness:
+    labels: [correct, incomplete, unsupported, not_applicable]
+  explanation_grounding:
+    labels: [fully_grounded, minor_unsupported, material_unsupported, contradicted]
+  usefulness:
+    scale:
+      1: Misleading or unusable.
+      2: Major corrections required.
+      3: Useful with meaningful verification work.
+      4: Useful and easy to verify.
+      5: Substantially accelerates correct understanding.
+adjudication:
+  independent_annotators_per_case: 2
+  adjudicator_required_when:
+    - any_label_disagreement
+    - any_major_error
+    - relation_is_contradicts
+    - relation_is_overgeneralized
+  blind_to_model_identity: true
+  preserve_rationales: true
+confidence_calibration:
+  bins: 10
+  metrics: [expected_calibration_error, brier_score, selective_accuracy, coverage]
+  selective_targets:
+    verified_minimum_precision: 0.95
+    review_required_maximum_coverage: 0.25

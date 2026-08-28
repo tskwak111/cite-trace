@@ -1,0 +1,1188 @@
+openapi: 3.1.0
+info:
+  title: CiteTrace API
+  version: 1.0.0
+  summary: Evidence-first scientific citation tracing API
+  description: Creates asynchronous paper analyses and returns inspectable citation-to-source evidence links. Limited
+    or abstained analyses are successful domain outcomes, not necessarily HTTP errors.
+servers:
+- url: http://localhost:8000
+  description: Local development
+security:
+- bearerAuth: []
+tags:
+- name: System
+- name: Analyses
+- name: Evidence
+- name: Feedback
+paths:
+  /healthz:
+    get:
+      tags:
+      - System
+      operationId: getHealth
+      security: []
+      responses:
+        '200':
+          description: Service process is healthy.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+  /v1/analyses:
+    post:
+      tags:
+      - Analyses
+      operationId: createAnalysis
+      summary: Create or idempotently retrieve an asynchronous analysis.
+      parameters:
+      - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AnalysisCreateRequest'
+      responses:
+        '202':
+          description: Analysis accepted.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Analysis'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/Unprocessable'
+  /v1/analyses/{analysis_id}:
+    get:
+      tags:
+      - Analyses
+      operationId: getAnalysis
+      parameters:
+      - $ref: '#/components/parameters/AnalysisId'
+      responses:
+        '200':
+          description: Current durable analysis state.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Analysis'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /v1/analyses/{analysis_id}:cancel:
+    post:
+      tags:
+      - Analyses
+      operationId: cancelAnalysis
+      parameters:
+      - $ref: '#/components/parameters/AnalysisId'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      responses:
+        '200':
+          description: Analysis is cancelled or already terminal.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Analysis'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+  /v1/analyses/{analysis_id}/evidence-links:
+    get:
+      tags:
+      - Evidence
+      operationId: listEvidenceLinks
+      parameters:
+      - $ref: '#/components/parameters/AnalysisId'
+      - name: status
+        in: query
+        schema:
+          $ref: '#/components/schemas/EvidenceLinkStatus'
+      - name: relation
+        in: query
+        schema:
+          $ref: '#/components/schemas/EvidenceRelation'
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 50
+      - name: cursor
+        in: query
+        schema:
+          type:
+          - string
+          - 'null'
+      responses:
+        '200':
+          description: Paginated evidence links.
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required:
+                - items
+                - next_cursor
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/EvidenceLink'
+                  next_cursor:
+                    type:
+                    - string
+                    - 'null'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /v1/analyses/{analysis_id}/stream:
+    get:
+      tags:
+      - Analyses
+      operationId: streamAnalysis
+      parameters:
+      - $ref: '#/components/parameters/AnalysisId'
+      - name: Last-Event-ID
+        in: header
+        required: false
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Server-sent analysis events. Delivery is at-least-once.
+          content:
+            text/event-stream:
+              schema:
+                type: string
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /v1/evidence-links/{evidence_link_id}:
+    get:
+      tags:
+      - Evidence
+      operationId: getEvidenceLink
+      parameters:
+      - name: evidence_link_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        '200':
+          description: Inspectable evidence link.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EvidenceLink'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /v1/evidence-links/{evidence_link_id}/feedback:
+    post:
+      tags:
+      - Feedback
+      operationId: submitEvidenceFeedback
+      parameters:
+      - name: evidence_link_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FeedbackRequest'
+      responses:
+        '201':
+          description: Feedback event created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeedbackEvent'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/Unprocessable'
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  parameters:
+    AnalysisId:
+      name: analysis_id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: true
+      description: Stable UUID or opaque key scoped to the authenticated workspace.
+      schema:
+        type: string
+        minLength: 8
+        maxLength: 255
+  responses:
+    NotFound:
+      description: Resource was not found or is not visible to the actor.
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
+    Conflict:
+      description: Request conflicts with current or idempotent state.
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
+    Unprocessable:
+      description: Request is syntactically valid but violates domain validation.
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
+  schemas:
+    HealthResponse:
+      type: object
+      additionalProperties: false
+      required:
+      - status
+      - service
+      - version
+      properties:
+        status:
+          const: ok
+        service:
+          const: citetrace-api
+        version:
+          type: string
+    AnalysisMode:
+      type: string
+      enum:
+      - understand
+      - implement
+      - review
+      - survey
+      - present
+    Audience:
+      type: string
+      enum:
+      - beginner
+      - intermediate
+      - expert
+    AnalysisStatus:
+      type: string
+      enum:
+      - created
+      - validating
+      - parsing
+      - resolving_references
+      - acquiring_sources
+      - retrieving_evidence
+      - verifying_relations
+      - generating_explanations
+      - auditing
+      - completed
+      - completed_with_limits
+      - failed
+      - cancelled
+    AnalysisScope:
+      oneOf:
+      - type: object
+        additionalProperties: false
+        required:
+        - kind
+        properties:
+          kind:
+            const: whole_document
+      - type: object
+        additionalProperties: false
+        required:
+        - kind
+        - citation_anchor_ids
+        properties:
+          kind:
+            const: citation_anchors
+          citation_anchor_ids:
+            type: array
+            minItems: 1
+            uniqueItems: true
+            items:
+              type: string
+              format: uuid
+    AnalysisCreateRequest:
+      type: object
+      additionalProperties: false
+      required:
+      - workspace_id
+      - document_id
+      - mode
+      - scope
+      - audience
+      - source_policy_profile
+      properties:
+        workspace_id:
+          type: string
+          format: uuid
+        document_id:
+          type: string
+          format: uuid
+        mode:
+          $ref: '#/components/schemas/AnalysisMode'
+        scope:
+          $ref: '#/components/schemas/AnalysisScope'
+        audience:
+          $ref: '#/components/schemas/Audience'
+        source_policy_profile:
+          type: string
+          minLength: 1
+          maxLength: 100
+    AnalysisProgress:
+      type: object
+      additionalProperties: false
+      required:
+      - stage
+      - completed_units
+      - total_units
+      - percent
+      properties:
+        stage:
+          $ref: '#/components/schemas/AnalysisStatus'
+        completed_units:
+          type: integer
+          minimum: 0
+        total_units:
+          type: integer
+          minimum: 0
+        percent:
+          type: number
+          minimum: 0
+          maximum: 100
+    Limitation:
+      type: object
+      additionalProperties: false
+      required:
+      - code
+      - message
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        reference_entry_id:
+          type:
+          - string
+          - 'null'
+          format: uuid
+        recoverable_actions:
+          type: array
+          items:
+            type: string
+    AnalysisLinks:
+      type: object
+      additionalProperties: false
+      required:
+      - self
+      - stream
+      - evidence_links
+      properties:
+        self:
+          type: string
+        stream:
+          type: string
+        evidence_links:
+          type: string
+    Analysis:
+      type: object
+      additionalProperties: false
+      required:
+      - id
+      - workspace_id
+      - document_id
+      - status
+      - mode
+      - audience
+      - progress
+      - limitations
+      - created_at
+      - updated_at
+      - links
+      properties:
+        id:
+          type: string
+          format: uuid
+        workspace_id:
+          type: string
+          format: uuid
+        document_id:
+          type: string
+          format: uuid
+        status:
+          $ref: '#/components/schemas/AnalysisStatus'
+        mode:
+          $ref: '#/components/schemas/AnalysisMode'
+        audience:
+          $ref: '#/components/schemas/Audience'
+        progress:
+          $ref: '#/components/schemas/AnalysisProgress'
+        limitations:
+          type: array
+          items:
+            $ref: '#/components/schemas/Limitation'
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        completed_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        links:
+          $ref: '#/components/schemas/AnalysisLinks'
+    CitationIntent:
+      type: string
+      enum:
+      - background
+      - definition
+      - problem_framing
+      - method_adoption
+      - method_extension
+      - dataset_use
+      - metric_use
+      - benchmark_comparison
+      - result_support
+      - result_contrast
+      - limitation
+      - future_direction
+      - tool_or_software_use
+      - perfunctory_mention
+    EvidenceRelation:
+      type: string
+      enum:
+      - direct_support
+      - partial_support
+      - indirect_support
+      - contradicts
+      - overgeneralized
+      - scope_mismatch
+      - no_relevant_evidence
+      - insufficient_evidence
+      - inaccessible_source
+    Transformation:
+      type: string
+      enum:
+      - adopted_unchanged
+      - parameter_changed
+      - domain_transferred
+      - extended
+      - simplified
+      - combined
+      - benchmark_only
+      - dataset_reused
+      - metric_reused
+      - conceptual_inspiration
+    AccessLevel:
+      type: string
+      enum:
+      - user_private_full_text
+      - open_access_full_text
+      - repository_manuscript
+      - publisher_open_full_text
+      - abstract_only
+      - metadata_only
+      - not_accessible
+    EvidenceLinkStatus:
+      type: string
+      enum:
+      - verified
+      - limited
+      - review_required
+      - blocked
+    DocumentSpan:
+      type: object
+      additionalProperties: false
+      required:
+      - page
+      - start_offset
+      - end_offset
+      - bounding_boxes
+      properties:
+        page:
+          type:
+          - integer
+          - 'null'
+          minimum: 1
+        start_offset:
+          type: integer
+          minimum: 0
+        end_offset:
+          type: integer
+          minimum: 1
+        bounding_boxes:
+          type: array
+          items:
+            $ref: '#/components/schemas/BoundingBox'
+    CitingClaim:
+      type: object
+      additionalProperties: false
+      required:
+      - id
+      - text
+      - document_span
+      - qualifiers
+      properties:
+        id: &id001
+          type: string
+          format: uuid
+        text:
+          type: string
+          minLength: 1
+        document_span:
+          $ref: '#/components/schemas/DocumentSpan'
+        qualifiers:
+          type: array
+          items:
+            type: string
+    ResolvedWork:
+      type: object
+      additionalProperties: false
+      required:
+      - work_id
+      - work_version_id
+      - title
+      - authors
+      - year
+      - identifiers
+      - resolution_status
+      properties:
+        work_id: *id001
+        work_version_id: *id001
+        title:
+          type: string
+          minLength: 1
+        authors:
+          type: array
+          items:
+            type: string
+        year:
+          type:
+          - integer
+          - 'null'
+          minimum: 1400
+          maximum: 2200
+        identifiers:
+          type: object
+          additionalProperties:
+            type: string
+        resolution_status:
+          enum:
+          - resolved
+          - resolved_with_version_uncertainty
+          - ambiguous
+          - unresolved
+          - not_a_scholarly_work
+          - user_confirmed
+    SourceSpan:
+      type: object
+      additionalProperties: false
+      required:
+      - id
+      - asset_id
+      - parsed_document_id
+      - access_level
+      - page
+      - section_path
+      - quote
+      - quote_sha256
+      - start_offset
+      - end_offset
+      - evidence_type
+      - bounding_boxes
+      properties:
+        id: *id001
+        asset_id: *id001
+        parsed_document_id:
+          type:
+          - string
+          - 'null'
+          format: uuid
+        access_level:
+          $ref: '#/components/schemas/AccessLevel'
+        page:
+          type:
+          - integer
+          - 'null'
+          minimum: 1
+        section_path:
+          type: array
+          items:
+            type: string
+        quote:
+          type: string
+          minLength: 1
+        quote_sha256:
+          type: string
+          pattern: ^[a-f0-9]{64}$
+        start_offset:
+          type: integer
+          minimum: 0
+        end_offset:
+          type: integer
+          minimum: 1
+        evidence_type:
+          enum:
+          - text_span
+          - equation
+          - table_cell_or_region
+          - figure_or_caption
+          - algorithm_block
+          - appendix_span
+          - metadata_field
+          - abstract_span
+        bounding_boxes:
+          type: array
+          items:
+            $ref: '#/components/schemas/BoundingBox'
+    ScopeObservation:
+      type: object
+      additionalProperties: false
+      required:
+      - dimension
+      - citing_scope
+      - source_scope
+      - supporting_source_span_ids
+      properties:
+        dimension:
+          type: string
+          minLength: 1
+        citing_scope:
+          type: string
+          minLength: 1
+        source_scope:
+          type: string
+          minLength: 1
+        supporting_source_span_ids:
+          type: array
+          items: *id001
+          uniqueItems: true
+    ConfidenceReason:
+      type: object
+      additionalProperties: false
+      required:
+      - stage
+      - code
+      - detail
+      properties:
+        stage:
+          type: string
+          minLength: 1
+        code:
+          type: string
+          minLength: 1
+        detail: &id002
+          type:
+          - string
+          - 'null'
+    ConfidenceVector:
+      type: object
+      additionalProperties: false
+      required:
+      - parse
+      - reference_resolution
+      - source_access
+      - evidence_retrieval
+      - relation_verification
+      - explanation_grounding
+      - weakest_link
+      - balanced_score
+      - calibration_profile
+      - reasons
+      properties:
+        parse:
+          type: number
+          minimum: 0
+          maximum: 1
+        reference_resolution:
+          type: number
+          minimum: 0
+          maximum: 1
+        source_access:
+          type: number
+          minimum: 0
+          maximum: 1
+        evidence_retrieval:
+          type: number
+          minimum: 0
+          maximum: 1
+        relation_verification:
+          type: number
+          minimum: 0
+          maximum: 1
+        explanation_grounding:
+          type: number
+          minimum: 0
+          maximum: 1
+        weakest_link:
+          type: number
+          minimum: 0
+          maximum: 1
+        balanced_score:
+          type: number
+          minimum: 0
+          maximum: 1
+        calibration_profile:
+          type: string
+          minLength: 1
+        reasons:
+          type: array
+          items:
+            $ref: '#/components/schemas/ConfidenceReason'
+    ExplanationStatement:
+      type: object
+      additionalProperties: false
+      required:
+      - text
+      - kind
+      - supporting_span_ids
+      - confidence
+      properties:
+        text:
+          type: string
+          minLength: 1
+        kind:
+          enum:
+          - evidence_based
+          - inference
+          - limitation
+          - instruction
+        supporting_span_ids:
+          type: array
+          items: *id001
+          uniqueItems: true
+        confidence:
+          type: number
+          minimum: 0
+          maximum: 1
+    EvidenceExplanation:
+      type: object
+      additionalProperties: false
+      required:
+      - summary
+      - statements
+      properties:
+        summary:
+          type: string
+          minLength: 1
+        statements:
+          type: array
+          items:
+            $ref: '#/components/schemas/ExplanationStatement'
+    Abstention:
+      type: object
+      additionalProperties: false
+      required:
+      - code
+      - message
+      - recoverable_actions
+      properties:
+        code:
+          type: string
+          minLength: 1
+        message:
+          type: string
+          minLength: 1
+        recoverable_actions:
+          type: array
+          items:
+            type: string
+    EvidenceLink:
+      type: object
+      additionalProperties: false
+      required:
+      - id
+      - analysis_id
+      - status
+      - citing_claim
+      - cited_work
+      - citation_intents
+      - evidence_relation
+      - scope_observations
+      - transformations
+      - source_spans
+      - abstention
+      - explanation
+      - confidence
+      - provenance
+      - created_at
+      properties:
+        id:
+          type: string
+          format: uuid
+        analysis_id:
+          type: string
+          format: uuid
+        status:
+          $ref: '#/components/schemas/EvidenceLinkStatus'
+        citing_claim:
+          $ref: '#/components/schemas/CitingClaim'
+        cited_work:
+          $ref: '#/components/schemas/ResolvedWork'
+        citation_intents:
+          type: array
+          uniqueItems: true
+          items:
+            $ref: '#/components/schemas/CitationIntent'
+        evidence_relation:
+          $ref: '#/components/schemas/EvidenceRelation'
+        scope_observations:
+          type: array
+          items:
+            $ref: '#/components/schemas/ScopeObservation'
+        transformations:
+          type: array
+          uniqueItems: true
+          items:
+            $ref: '#/components/schemas/Transformation'
+        source_spans:
+          type: array
+          items:
+            $ref: '#/components/schemas/SourceSpan'
+        abstention:
+          oneOf:
+          - $ref: '#/components/schemas/Abstention'
+          - type: 'null'
+        explanation:
+          oneOf:
+          - $ref: '#/components/schemas/EvidenceExplanation'
+          - type: 'null'
+        confidence:
+          $ref: '#/components/schemas/ConfidenceVector'
+        created_at:
+          type: string
+          format: date-time
+        provenance:
+          $ref: '#/components/schemas/ProvenanceRecord'
+      allOf:
+      - if:
+          properties:
+            status:
+              const: verified
+          required:
+          - status
+        then:
+          properties:
+            source_spans:
+              minItems: 1
+            abstention:
+              type: 'null'
+            explanation:
+              $ref: '#/components/schemas/EvidenceExplanation'
+      - if:
+          properties:
+            status:
+              const: blocked
+          required:
+          - status
+        then:
+          properties:
+            abstention:
+              $ref: '#/components/schemas/Abstention'
+      - if:
+          properties:
+            evidence_relation:
+              const: inaccessible_source
+          required:
+          - evidence_relation
+        then:
+          properties:
+            source_spans:
+              maxItems: 0
+            abstention:
+              $ref: '#/components/schemas/Abstention'
+      - if:
+          properties:
+            evidence_relation:
+              enum:
+              - direct_support
+              - partial_support
+              - indirect_support
+              - contradicts
+              - overgeneralized
+              - scope_mismatch
+          required:
+          - evidence_relation
+        then:
+          properties:
+            source_spans:
+              minItems: 1
+    FeedbackCategory:
+      type: string
+      enum:
+      - overall
+      - reference_resolution
+      - claim_span
+      - source_evidence
+      - relation
+      - transformation
+      - missing_evidence
+      - nuance
+      - explanation
+      - access
+      - other
+    FeedbackRequest:
+      type: object
+      additionalProperties: false
+      required:
+      - category
+      - verdict
+      properties:
+        category:
+          $ref: '#/components/schemas/FeedbackCategory'
+        verdict:
+          type: string
+          enum:
+          - agree
+          - disagree
+          - uncertain
+        comment:
+          type:
+          - string
+          - 'null'
+          maxLength: 4000
+        proposed_relation:
+          oneOf:
+          - $ref: '#/components/schemas/EvidenceRelation'
+          - type: 'null'
+        proposed_source_span:
+          oneOf:
+          - $ref: '#/components/schemas/SourceSpan'
+          - type: 'null'
+    FeedbackEvent:
+      type: object
+      additionalProperties: false
+      required:
+      - id
+      - evidence_link_id
+      - category
+      - verdict
+      - created_at
+      properties:
+        id:
+          type: string
+          format: uuid
+        evidence_link_id:
+          type: string
+          format: uuid
+        category:
+          $ref: '#/components/schemas/FeedbackCategory'
+        verdict:
+          type: string
+          enum:
+          - agree
+          - disagree
+          - uncertain
+        comment:
+          type:
+          - string
+          - 'null'
+        proposed_relation:
+          oneOf:
+          - $ref: '#/components/schemas/EvidenceRelation'
+          - type: 'null'
+        created_at:
+          type: string
+          format: date-time
+        proposed_source_span:
+          oneOf:
+          - $ref: '#/components/schemas/SourceSpan'
+          - type: 'null'
+    ProblemDetails:
+      type: object
+      additionalProperties: true
+      required:
+      - type
+      - title
+      - status
+      - code
+      - detail
+      - trace_id
+      - retryable
+      properties:
+        type:
+          type: string
+          format: uri
+        title:
+          type: string
+        status:
+          type: integer
+        code:
+          type: string
+        detail:
+          type: string
+        instance:
+          type:
+          - string
+          - 'null'
+        trace_id:
+          type: string
+        retryable:
+          type: boolean
+    BoundingBox:
+      type: object
+      additionalProperties: false
+      required:
+      - page
+      - x
+      - y
+      - width
+      - height
+      properties:
+        page:
+          type: integer
+          minimum: 1
+        x:
+          type: number
+          minimum: 0
+        y:
+          type: number
+          minimum: 0
+        width:
+          type: number
+          exclusiveMinimum: 0
+        height:
+          type: number
+          exclusiveMinimum: 0
+        coordinate_system:
+          type: string
+          enum:
+          - pdf_points_top_left
+          - normalized_0_1_top_left
+          default: pdf_points_top_left
+    ProducerRecord:
+      type: object
+      additionalProperties: false
+      required:
+      - producer_type
+      - name
+      - version
+      - operation
+      - input_fingerprint
+      - output_fingerprint
+      - occurred_at
+      - trace_id
+      properties:
+        producer_type:
+          enum:
+          - parser
+          - provider
+          - model
+          - rule
+          - user
+          - annotator
+        name:
+          type: string
+          minLength: 1
+        version:
+          type: string
+          minLength: 1
+        operation: *id002
+        input_fingerprint: *id002
+        output_fingerprint: *id002
+        occurred_at:
+          type: string
+          format: date-time
+        trace_id: *id002
+    AccessDecision:
+      type: object
+      additionalProperties: false
+      required:
+      - asset_id
+      - access_level
+      - acquisition_method
+      - policy_profile
+      - license_spdx
+      - decided_at
+      properties:
+        asset_id: *id001
+        access_level:
+          $ref: '#/components/schemas/AccessLevel'
+        acquisition_method:
+          enum:
+          - user_upload
+          - open_repository
+          - publisher_open
+          - provider_abstract
+          - provider_metadata
+          - manual_registration
+        policy_profile:
+          type: string
+          minLength: 1
+        license_spdx: *id002
+        decided_at:
+          type: string
+          format: date-time
+    ProvenanceRecord:
+      type: object
+      additionalProperties: false
+      required:
+      - pipeline_version
+      - taxonomy_version
+      - prompt_pack_version
+      - parser_version
+      - source_policy_profile
+      - source_asset_ids
+      - source_asset_checksums
+      - producer_records
+      - access_decisions
+      properties:
+        pipeline_version:
+          type: string
+          minLength: 1
+        taxonomy_version:
+          type: string
+          minLength: 1
+        prompt_pack_version:
+          type: string
+          minLength: 1
+        parser_version: *id002
+        source_policy_profile:
+          type: string
+          minLength: 1
+        source_asset_ids:
+          type: array
+          items: *id001
+          minItems: 1
+          uniqueItems: true
+        source_asset_checksums:
+          type: object
+          propertyNames:
+            format: uuid
+          additionalProperties:
+            type: string
+            pattern: ^[a-f0-9]{64}$
+          minProperties: 1
+        producer_records:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProducerRecord'
+          minItems: 1
+        access_decisions:
+          type: array
+          items:
+            $ref: '#/components/schemas/AccessDecision'
+          minItems: 1

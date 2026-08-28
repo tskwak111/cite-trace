@@ -1,0 +1,43 @@
+version: 1.0.0
+profiles:
+  lawful-open-or-user-upload:
+    allowed_acquisition_methods:
+      - user_upload
+      - open_repository
+      - publisher_open
+      - provider_abstract
+      - provider_metadata
+      - manual_registration
+    prohibit_paywall_bypass: true
+    require_public_access_evidence: true
+    follow_redirects_max: 4
+    maximum_download_bytes: 104857600
+    allowed_media_types:
+      - application/pdf
+      - application/xml
+      - text/xml
+      - text/html
+      - text/plain
+    url_security:
+      require_https: true
+      deny_private_ip_ranges: true
+      deny_link_local_ip_ranges: true
+      deny_loopback: true
+      revalidate_dns_after_redirect: true
+      ports: [443]
+    quote_display:
+      full_text_asset_owned_by_user: exact_evidence_spans
+      open_access_full_text: exact_evidence_spans
+      repository_manuscript: exact_evidence_spans
+      publisher_open_full_text: exact_evidence_spans
+      abstract_only: abstract_spans_only
+      metadata_only: metadata_fields_only
+      not_accessible: no_quote
+    provider_priority:
+      metadata: [crossref, openalex, semantic_scholar]
+      open_access_location: [unpaywall, openalex]
+      repositories: [arxiv, pubmed_central, institutional_repository]
+    logging:
+      store_remote_response_body: false
+      store_safe_metadata_and_hashes: true
+      redact_signed_query_parameters: true

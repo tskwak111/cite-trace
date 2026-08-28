@@ -1,0 +1,158 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.citetrace.dev/feedback.v1.schema.json",
+  "title": "Evidence Feedback v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "evidence_link_id",
+    "category",
+    "verdict"
+  ],
+  "properties": {
+    "evidence_link_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "category": {
+      "enum": [
+        "overall",
+        "reference_resolution",
+        "claim_span",
+        "source_evidence",
+        "relation",
+        "transformation",
+        "missing_evidence",
+        "nuance",
+        "explanation",
+        "access",
+        "other"
+      ]
+    },
+    "verdict": {
+      "enum": [
+        "agree",
+        "disagree",
+        "uncertain"
+      ]
+    },
+    "comment": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 4000
+    },
+    "proposed_relation": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        null,
+        "direct_support",
+        "partial_support",
+        "indirect_support",
+        "contradicts",
+        "overgeneralized",
+        "scope_mismatch",
+        "no_relevant_evidence",
+        "insufficient_evidence",
+        "inaccessible_source"
+      ]
+    },
+    "proposed_source_span": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "asset_id",
+            "start_offset",
+            "end_offset",
+            "quote",
+            "evidence_type"
+          ],
+          "properties": {
+            "id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "asset_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "parsed_document_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "page": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 1
+            },
+            "section_path": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "start_offset": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "end_offset": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "quote": {
+              "type": "string",
+              "minLength": 1
+            },
+            "quote_sha256": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            "evidence_type": {
+              "enum": [
+                "text_span",
+                "equation",
+                "table_cell_or_region",
+                "figure_or_caption",
+                "algorithm_block",
+                "appendix_span",
+                "metadata_field",
+                "abstract_span"
+              ]
+            },
+            "bounding_boxes": {
+              "type": "array",
+              "items": {
+                "type": "object"
+              }
+            },
+            "access_level": {
+              "enum": [
+                "user_private_full_text",
+                "open_access_full_text",
+                "repository_manuscript",
+                "publisher_open_full_text",
+                "abstract_only",
+                "metadata_only",
+                "not_accessible"
+              ]
+            }
+          }
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "client_context": {
+      "type": "object"
+    }
+  }
+}

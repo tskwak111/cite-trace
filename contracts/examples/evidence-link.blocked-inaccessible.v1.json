@@ -1,0 +1,100 @@
+{
+  "id": "7bbf525f-f0be-487f-a0d2-40b261a3df34",
+  "analysis_id": "0d0f9f53-5284-4730-8521-19d43b37d4df",
+  "status": "blocked",
+  "citing_claim": {
+    "id": "6fba85a8-d55c-48ea-b284-56fa307f0180",
+    "text": "Prior work establishes the same guarantee.",
+    "document_span": {
+      "page": 5,
+      "start_offset": 3000,
+      "end_offset": 3046,
+      "bounding_boxes": []
+    },
+    "qualifiers": [
+      "same guarantee"
+    ]
+  },
+  "cited_work": {
+    "work_id": "85f43d0c-484c-4ea9-b6c7-9b8cb057a865",
+    "work_version_id": "046d6cc7-40db-4ab8-9a0c-e7e7eb1dfed9",
+    "title": "Metadata-only Example",
+    "authors": [
+      "C. Author"
+    ],
+    "year": 2024,
+    "identifiers": {
+      "doi": "10.0000/metadata-only"
+    },
+    "resolution_status": "resolved"
+  },
+  "citation_intents": [
+    "result_support"
+  ],
+  "evidence_relation": "inaccessible_source",
+  "scope_observations": [],
+  "transformations": [],
+  "source_spans": [],
+  "abstention": {
+    "code": "inaccessible_source",
+    "message": "The work was resolved, but no lawfully analyzable full text or abstract was available.",
+    "recoverable_actions": [
+      "upload_authorized_source"
+    ]
+  },
+  "explanation": null,
+  "confidence": {
+    "parse": 0.98,
+    "reference_resolution": 0.94,
+    "source_access": 1.0,
+    "evidence_retrieval": 0.0,
+    "relation_verification": 0.0,
+    "explanation_grounding": 0.0,
+    "weakest_link": 0.0,
+    "balanced_score": 0.37,
+    "calibration_profile": "access-gate-v1",
+    "reasons": [
+      {
+        "stage": "source_access",
+        "code": "no_lawful_analyzable_content",
+        "detail": "Only bibliographic metadata was available."
+      }
+    ]
+  },
+  "provenance": {
+    "pipeline_version": "1.0.0",
+    "taxonomy_version": "1.0.0",
+    "prompt_pack_version": "2026-08-28.1",
+    "parser_version": null,
+    "source_policy_profile": "lawful-open-or-user-upload",
+    "source_asset_ids": [
+      "a0d56aa2-baf2-437c-b613-498e714197a0"
+    ],
+    "source_asset_checksums": {
+      "a0d56aa2-baf2-437c-b613-498e714197a0": "5555555555555555555555555555555555555555555555555555555555555555"
+    },
+    "producer_records": [
+      {
+        "producer_type": "provider",
+        "name": "metadata-resolver",
+        "version": "1.0.0",
+        "operation": "resolve_metadata",
+        "input_fingerprint": "6666666666666666666666666666666666666666666666666666666666666666",
+        "output_fingerprint": "7777777777777777777777777777777777777777777777777777777777777777",
+        "occurred_at": "2026-08-28T10:02:00Z",
+        "trace_id": "trace-example-002"
+      }
+    ],
+    "access_decisions": [
+      {
+        "asset_id": "a0d56aa2-baf2-437c-b613-498e714197a0",
+        "access_level": "not_accessible",
+        "acquisition_method": "provider_metadata",
+        "policy_profile": "lawful-open-or-user-upload",
+        "license_spdx": null,
+        "decided_at": "2026-08-28T10:02:15Z"
+      }
+    ]
+  },
+  "created_at": "2026-08-28T10:04:00Z"
+}

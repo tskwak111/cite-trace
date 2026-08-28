@@ -1,0 +1,87 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.citetrace.dev/analysis-result.v1.schema.json",
+  "title": "AnalysisResult v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "analysis_id",
+    "status",
+    "mode",
+    "evidence_links",
+    "limitations",
+    "created_at",
+    "updated_at"
+  ],
+  "properties": {
+    "analysis_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "status": {
+      "enum": [
+        "created",
+        "validating",
+        "parsing",
+        "resolving_references",
+        "acquiring_sources",
+        "retrieving_evidence",
+        "verifying_relations",
+        "generating_explanations",
+        "auditing",
+        "completed",
+        "completed_with_limits",
+        "failed",
+        "cancelled"
+      ]
+    },
+    "mode": {
+      "enum": [
+        "understand",
+        "implement",
+        "review",
+        "survey",
+        "present"
+      ]
+    },
+    "evidence_links": {
+      "type": "array",
+      "items": {
+        "$ref": "evidence-link.v1.schema.json"
+      }
+    },
+    "limitations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "code",
+          "message"
+        ],
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "reference_entry_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          }
+        }
+      }
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}

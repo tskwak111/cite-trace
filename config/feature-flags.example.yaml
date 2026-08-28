@@ -1,0 +1,22 @@
+version: 1.0.0
+flags:
+  recursive_lineage_depth_2:
+    default: false
+    owner: evidence-platform
+    release_gate: lineage_goldset_macro_f1_gte_0_72
+  table_region_evidence:
+    default: false
+    owner: document-intelligence
+    release_gate: table_span_precision_gte_0_90
+  multi_document_workspace:
+    default: false
+    owner: product-platform
+    release_gate: tenant_isolation_suite_passes
+  beginner_explanations:
+    default: true
+    owner: explanation-quality
+    release_gate: unsupported_statement_rate_lte_0_02
+  public_share_links:
+    default: false
+    owner: security
+    release_gate: access_disclosure_and_revocation_tests_pass

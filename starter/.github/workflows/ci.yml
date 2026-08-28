@@ -1,0 +1,42 @@
+name: citetrace-ci
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  contracts-and-api:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Install package validators
+        run: python -m pip install jsonschema pyyaml openapi-spec-validator
+      - name: Validate package contracts
+        run: python scripts/validate_package.py
+      - name: Install API
+        run: python -m pip install -e 'starter/services/api[dev]'
+      - name: Lint API
+        run: ruff check starter/services/api/src starter/services/api/tests
+      - name: Type-check API
+        run: mypy starter/services/api/src
+      - name: Test API
+        run: pytest -q starter/services/api/tests
+  web:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+      - name: Enable pnpm
+        run: corepack enable
+      - name: Install web dependencies
+        run: pnpm --dir starter/apps/web install --no-frozen-lockfile
+      - name: Type-check web
+        run: pnpm --dir starter/apps/web typecheck
+      - name: Build web
+        run: pnpm --dir starter/apps/web build

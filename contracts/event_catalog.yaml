@@ -1,0 +1,120 @@
+version: '1.0'
+name: CiteTrace Event Catalog
+transport:
+  initial: redis-backed work queue with transactional PostgreSQL outbox
+  delivery: at-least-once
+  ordering: per aggregate when produced by the same outbox partition
+envelope:
+  required:
+    - schema_version
+    - event_id
+    - event_type
+    - occurred_at
+    - trace_id
+    - workspace_id
+    - aggregate_type
+    - aggregate_id
+    - idempotency_key
+    - producer
+    - payload
+  fields:
+    schema_version: string
+    event_id: uuid
+    event_type: string
+    occurred_at: date-time
+    trace_id: string
+    workspace_id: uuid
+    aggregate_type: string
+    aggregate_id: uuid
+    idempotency_key: string
+    producer: string
+    causation_id: uuid-or-null
+    correlation_id: uuid-or-null
+    payload: object
+events:
+  - name: analysis.requested
+    kind: command
+    aggregate_type: analysis_run
+    payload:
+      required: [document_id, mode, scope, audience, source_policy_profile]
+  - name: analysis.cancel.requested
+    kind: command
+    aggregate_type: analysis_run
+    payload:
+      required: [requested_by]
+  - name: analysis.stage.started
+    kind: fact
+    aggregate_type: analysis_run
+    payload:
+      required: [stage, attempt, input_fingerprint]
+  - name: analysis.stage.completed
+    kind: fact
+    aggregate_type: analysis_run
+    payload:
+      required: [stage, attempt, input_fingerprint, output_artifact_ids, limitations]
+  - name: analysis.stage.failed
+    kind: fact
+    aggregate_type: analysis_run
+    payload:
+      required: [stage, attempt, error_code, retryable]
+  - name: source_asset.registered
+    kind: fact
+    aggregate_type: source_asset
+    payload:
+      required: [checksum, media_type, access_level, policy_profile]
+  - name: document.parsed
+    kind: fact
+    aggregate_type: source_asset
+    payload:
+      required: [parsed_document_id, parser_version, quality_grade]
+  - name: reference.resolved
+    kind: fact
+    aggregate_type: reference_entry
+    payload:
+      required: [resolution_id, work_id, work_version_id, score, margin, decision_method]
+  - name: reference.resolution.ambiguous
+    kind: fact
+    aggregate_type: reference_entry
+    payload:
+      required: [resolution_id, candidate_ids, reason_codes]
+  - name: source.acquire.requested
+    kind: command
+    aggregate_type: work_version
+    payload:
+      required: [work_version_id, source_policy_profile]
+  - name: source.acquired
+    kind: fact
+    aggregate_type: work_version
+    payload:
+      required: [asset_id, access_level, acquisition_method]
+  - name: evidence.retrieved
+    kind: fact
+    aggregate_type: citing_claim
+    payload:
+      required: [query_plan_id, candidate_ids, retrieval_profile]
+  - name: relation.verified
+    kind: fact
+    aggregate_type: citing_claim
+    payload:
+      required: [evidence_link_id, relation, confidence_profile]
+  - name: evidence_link.audited
+    kind: fact
+    aggregate_type: evidence_link
+    payload:
+      required: [decision, violation_codes]
+  - name: analysis.completed
+    kind: fact
+    aggregate_type: analysis_run
+    payload:
+      required: [status, evidence_link_count, limitation_count]
+  - name: feedback.submitted
+    kind: fact
+    aggregate_type: evidence_link
+    payload:
+      required: [feedback_event_id, category, verdict]
+consumer_rules:
+  - Consumers must ignore unknown optional fields.
+  - Consumers must reject unsupported major schema versions.
+  - Event handlers must be idempotent by event_id and semantic idempotency_key.
+  - Payloads must not contain raw private document text unless a dedicated encrypted channel and policy explicitly allow it.
+  - Facts are immutable; corrections create new events and supersession records.

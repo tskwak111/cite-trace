@@ -1,0 +1,153 @@
+{
+  "id": "e43401b8-4da9-44ad-aa46-49dc49117920",
+  "analysis_id": "0d0f9f53-5284-4730-8521-19d43b37d4df",
+  "status": "verified",
+  "citing_claim": {
+    "id": "24905f34-c8e1-434c-aa34-4a1df277ef2c",
+    "text": "The method remains effective with limited labeled data.",
+    "document_span": {
+      "page": 4,
+      "start_offset": 2110,
+      "end_offset": 2172,
+      "bounding_boxes": []
+    },
+    "qualifiers": [
+      "remains effective",
+      "limited labeled data"
+    ]
+  },
+  "cited_work": {
+    "work_id": "c36d6e18-1844-412f-bb10-6d0de40b3140",
+    "work_version_id": "9d02c214-dc58-4358-b85b-51a214f719ef",
+    "title": "Example Source Paper",
+    "authors": [
+      "A. Researcher",
+      "B. Scientist"
+    ],
+    "year": 2025,
+    "identifiers": {
+      "doi": "10.0000/example"
+    },
+    "resolution_status": "resolved"
+  },
+  "citation_intents": [
+    "result_support"
+  ],
+  "evidence_relation": "scope_mismatch",
+  "scope_observations": [
+    {
+      "dimension": "dataset",
+      "citing_scope": "general low-label settings",
+      "source_scope": "two image-classification datasets",
+      "supporting_source_span_ids": [
+        "1f746f0a-bf64-48ae-b3fd-70607f775329"
+      ]
+    }
+  ],
+  "transformations": [],
+  "source_spans": [
+    {
+      "id": "1f746f0a-bf64-48ae-b3fd-70607f775329",
+      "asset_id": "36a6150b-a504-457e-b5fd-a648220e155d",
+      "parsed_document_id": "9f62cd4f-218e-42b9-af5c-b88794b5175b",
+      "access_level": "open_access_full_text",
+      "page": 7,
+      "section_path": [
+        "4 Experiments",
+        "4.2 Low-label setting"
+      ],
+      "quote": "With 10% of labels, the model improves accuracy on Dataset A and Dataset B.",
+      "quote_sha256": "13774b1255fe5536e194d62018e637ceedd685a14966a1c01584ce8c07af829b",
+      "start_offset": 8321,
+      "end_offset": 8398,
+      "evidence_type": "text_span",
+      "bounding_boxes": []
+    }
+  ],
+  "abstention": null,
+  "explanation": {
+    "summary": "The source supports a low-label result on two image datasets, but not a general claim across settings.",
+    "statements": [
+      {
+        "text": "The experiment used 10% labeled data on two image-classification datasets.",
+        "kind": "evidence_based",
+        "supporting_span_ids": [
+          "1f746f0a-bf64-48ae-b3fd-70607f775329"
+        ],
+        "confidence": 0.96
+      },
+      {
+        "text": "Generalization beyond those datasets is not established by this source.",
+        "kind": "inference",
+        "supporting_span_ids": [
+          "1f746f0a-bf64-48ae-b3fd-70607f775329"
+        ],
+        "confidence": 0.84
+      }
+    ]
+  },
+  "confidence": {
+    "parse": 0.99,
+    "reference_resolution": 0.96,
+    "source_access": 1.0,
+    "evidence_retrieval": 0.91,
+    "relation_verification": 0.84,
+    "explanation_grounding": 1.0,
+    "weakest_link": 0.84,
+    "balanced_score": 0.949,
+    "calibration_profile": "relation-en-cs-v1",
+    "reasons": [
+      {
+        "stage": "relation_verification",
+        "code": "scope_language_ambiguous",
+        "detail": "The citing claim is broader than the two evaluated datasets."
+      }
+    ]
+  },
+  "provenance": {
+    "pipeline_version": "1.0.0",
+    "taxonomy_version": "1.0.0",
+    "prompt_pack_version": "2026-08-28.1",
+    "parser_version": "grobid-0.9.1+normalizer-1.0.0",
+    "source_policy_profile": "lawful-open-or-user-upload",
+    "source_asset_ids": [
+      "36a6150b-a504-457e-b5fd-a648220e155d"
+    ],
+    "source_asset_checksums": {
+      "36a6150b-a504-457e-b5fd-a648220e155d": "1111111111111111111111111111111111111111111111111111111111111111"
+    },
+    "producer_records": [
+      {
+        "producer_type": "parser",
+        "name": "grobid-normalizer",
+        "version": "0.9.1+1.0.0",
+        "operation": "parse_and_normalize",
+        "input_fingerprint": "1111111111111111111111111111111111111111111111111111111111111111",
+        "output_fingerprint": "2222222222222222222222222222222222222222222222222222222222222222",
+        "occurred_at": "2026-08-28T10:01:00Z",
+        "trace_id": "trace-example-001"
+      },
+      {
+        "producer_type": "model",
+        "name": "relation-verifier",
+        "version": "route-profile-v1",
+        "operation": "verify_relation",
+        "input_fingerprint": "3333333333333333333333333333333333333333333333333333333333333333",
+        "output_fingerprint": "4444444444444444444444444444444444444444444444444444444444444444",
+        "occurred_at": "2026-08-28T10:03:00Z",
+        "trace_id": "trace-example-001"
+      }
+    ],
+    "access_decisions": [
+      {
+        "asset_id": "36a6150b-a504-457e-b5fd-a648220e155d",
+        "access_level": "open_access_full_text",
+        "acquisition_method": "open_repository",
+        "policy_profile": "lawful-open-or-user-upload",
+        "license_spdx": "CC-BY-4.0",
+        "decided_at": "2026-08-28T10:00:30Z"
+      }
+    ]
+  },
+  "created_at": "2026-08-28T10:03:12Z"
+}

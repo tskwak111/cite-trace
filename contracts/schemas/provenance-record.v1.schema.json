@@ -1,0 +1,185 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.citetrace.dev/provenance-record.v1.schema.json",
+  "title": "ProvenanceRecord v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "pipeline_version",
+    "taxonomy_version",
+    "prompt_pack_version",
+    "parser_version",
+    "source_policy_profile",
+    "source_asset_ids",
+    "source_asset_checksums",
+    "producer_records",
+    "access_decisions"
+  ],
+  "properties": {
+    "pipeline_version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "taxonomy_version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "prompt_pack_version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "parser_version": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "source_policy_profile": {
+      "type": "string",
+      "minLength": 1
+    },
+    "source_asset_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "format": "uuid"
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "source_asset_checksums": {
+      "type": "object",
+      "propertyNames": {
+        "format": "uuid"
+      },
+      "additionalProperties": {
+        "type": "string",
+        "pattern": "^[a-f0-9]{64}$"
+      },
+      "minProperties": 1
+    },
+    "producer_records": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "producer_type",
+          "name",
+          "version",
+          "operation",
+          "input_fingerprint",
+          "output_fingerprint",
+          "occurred_at",
+          "trace_id"
+        ],
+        "properties": {
+          "producer_type": {
+            "enum": [
+              "parser",
+              "provider",
+              "model",
+              "rule",
+              "user",
+              "annotator"
+            ]
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "version": {
+            "type": "string",
+            "minLength": 1
+          },
+          "operation": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "input_fingerprint": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "output_fingerprint": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "occurred_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "trace_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "minItems": 1
+    },
+    "access_decisions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "asset_id",
+          "access_level",
+          "acquisition_method",
+          "policy_profile",
+          "license_spdx",
+          "decided_at"
+        ],
+        "properties": {
+          "asset_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "access_level": {
+            "enum": [
+              "user_private_full_text",
+              "open_access_full_text",
+              "repository_manuscript",
+              "publisher_open_full_text",
+              "abstract_only",
+              "metadata_only",
+              "not_accessible"
+            ]
+          },
+          "acquisition_method": {
+            "enum": [
+              "user_upload",
+              "open_repository",
+              "publisher_open",
+              "provider_abstract",
+              "provider_metadata",
+              "manual_registration"
+            ]
+          },
+          "policy_profile": {
+            "type": "string",
+            "minLength": 1
+          },
+          "license_spdx": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "decided_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "minItems": 1
+    }
+  }
+}

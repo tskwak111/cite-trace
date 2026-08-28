@@ -1,0 +1,24 @@
+version: 1.0.0
+kind: transformation
+multi_label: true
+values:
+  - id: adopted_unchanged
+    display_name_ko: 그대로 채택
+  - id: parameter_changed
+    display_name_ko: 설정·파라미터 변경
+  - id: domain_transferred
+    display_name_ko: 다른 도메인으로 이전
+  - id: extended
+    display_name_ko: 기능·구조 확장
+  - id: simplified
+    display_name_ko: 단순화
+  - id: combined
+    display_name_ko: 다른 방법과 결합
+  - id: benchmark_only
+    display_name_ko: 비교 대상으로만 사용
+  - id: dataset_reused
+    display_name_ko: 데이터셋 재사용
+  - id: metric_reused
+    display_name_ko: 지표 재사용
+  - id: conceptual_inspiration
+    display_name_ko: 개념적 영감

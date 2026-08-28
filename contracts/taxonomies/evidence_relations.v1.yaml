@@ -1,0 +1,22 @@
+version: 1.0.0
+kind: evidence_relation
+multi_label: false
+values:
+  - id: direct_support
+    display_name_ko: 직접 지지
+  - id: partial_support
+    display_name_ko: 부분 지지
+  - id: indirect_support
+    display_name_ko: 간접 지지
+  - id: contradicts
+    display_name_ko: 반대 결과
+  - id: overgeneralized
+    display_name_ko: 과도한 일반화
+  - id: scope_mismatch
+    display_name_ko: 범위 불일치
+  - id: no_relevant_evidence
+    display_name_ko: 관련 근거 미발견
+  - id: insufficient_evidence
+    display_name_ko: 판단 근거 부족
+  - id: inaccessible_source
+    display_name_ko: 원문 접근 불가

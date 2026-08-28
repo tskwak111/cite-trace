@@ -1,0 +1,9 @@
+# Copy to .github/CODEOWNERS and replace placeholders before team use.
+*                                      @org/citetrace-maintainers
+/contracts/                             @org/citetrace-platform @org/citetrace-ml-quality
+/contracts/db/                          @org/citetrace-platform @org/citetrace-security
+/prompts/                               @org/citetrace-ml-quality
+/eval/                                  @org/citetrace-ml-quality
+/docs/10_SECURITY_PRIVACY_COPYRIGHT.md  @org/citetrace-security @org/citetrace-legal
+/starter/apps/web/                      @org/citetrace-frontend
+/starter/services/api/                  @org/citetrace-backend

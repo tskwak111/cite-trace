@@ -1,0 +1,26 @@
+version: 1.0.0
+profiles:
+  standard-30d:
+    uploaded_source_bytes_days: 30
+    acquired_open_source_bytes_days: 90
+    parsed_artifacts_days: 90
+    generated_explanations_days: 365
+    audit_metadata_days: 365
+    raw_model_prompts_days: 0
+    raw_model_outputs_days: 0
+    feedback_events_days: 730
+    deletion_grace_hours: 24
+  research-lab-180d:
+    uploaded_source_bytes_days: 180
+    acquired_open_source_bytes_days: 180
+    parsed_artifacts_days: 365
+    generated_explanations_days: 730
+    audit_metadata_days: 730
+    raw_model_prompts_days: 0
+    raw_model_outputs_days: 0
+    feedback_events_days: 1095
+rules:
+  legal_hold_overrides_retention: true
+  user_delete_request_starts_tombstone_immediately: true
+  backup_expiry_days_max: 35
+  deletion_events_are_audited_without_preserving_deleted_content: true

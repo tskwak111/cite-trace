@@ -1,0 +1,26 @@
+version: 1.0.0
+kind: feedback_category
+multi_label: false
+values:
+  - id: overall
+    display_name_ko: 전체 판정
+  - id: reference_resolution
+    display_name_ko: 인용 논문 식별
+  - id: claim_span
+    display_name_ko: 현재 논문 주장 범위
+  - id: source_evidence
+    display_name_ko: 원문 근거 위치
+  - id: relation
+    display_name_ko: 지지·반박 관계
+  - id: transformation
+    display_name_ko: 계승·변형 분석
+  - id: missing_evidence
+    display_name_ko: 누락된 근거
+  - id: nuance
+    display_name_ko: 조건·범위·뉘앙스
+  - id: explanation
+    display_name_ko: 설명 명확성
+  - id: access
+    display_name_ko: 접근 수준·출처
+  - id: other
+    display_name_ko: 기타

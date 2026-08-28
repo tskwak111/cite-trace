@@ -1,0 +1,12 @@
+{
+  "evidence_link_id": "e43401b8-4da9-44ad-aa46-49dc49117920",
+  "category": "relation",
+  "verdict": "disagree",
+  "comment": "This should be partial_support because the citing sentence is scoped by the preceding sentence.",
+  "proposed_relation": "partial_support",
+  "proposed_source_span": null,
+  "client_context": {
+    "reader_mode": "review",
+    "ui_version": "1.0.0"
+  }
+}

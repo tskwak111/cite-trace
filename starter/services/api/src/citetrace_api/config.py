@@ -19,6 +19,16 @@ class Settings(BaseSettings):
     source_policy_profile: str = "lawful-open-or-user-upload"
     retention_profile: str = "standard-30d"
 
+    database_url: str = "postgresql+psycopg://citetrace:citetrace@localhost:5432/citetrace"
+    database_pool_size: int = Field(default=10, ge=1, le=50)
+    database_pool_timeout_seconds: float = Field(default=5.0, gt=0, le=30)
+    
+    s3_endpoint_url: str = "http://localhost:9000"
+    s3_bucket: str = "citetrace"
+    s3_access_key: str = "minioadmin"
+    s3_secret_key: str = "minioadmin"
+    maximum_upload_bytes: int = 104_857_600
+
 
 @lru_cache
 def get_settings() -> Settings:

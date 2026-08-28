@@ -12,6 +12,11 @@ dependencies = [
   "pydantic>=2.11,<3",
   "pydantic-settings>=2.9,<3",
   "uvicorn[standard]>=0.35,<1",
+  "psycopg[binary,pool]>=3.2,<4",
+  "sqlalchemy[asyncio]>=2.0,<3",
+  "boto3>=1.40,<2",
+  "pypdf>=6,<7",
+  "python-multipart>=0.0.20,<1",
 ]
 
 [project.optional-dependencies]
@@ -21,6 +26,8 @@ dev = [
   "pytest>=8.4,<9",
   "pytest-cov>=6.2,<7",
   "ruff>=0.12,<1",
+  "anyio[asyncio]>=4.8,<5",
+  "pytest-anyio>=0.0.0,<1",
 ]
 
 [tool.setuptools.packages.find]
@@ -29,6 +36,7 @@ where = ["src"]
 [tool.pytest.ini_options]
 addopts = "--strict-markers --strict-config"
 testpaths = ["tests"]
+anyio_mode = "asyncio"
 
 [tool.ruff]
 target-version = "py313"
@@ -37,6 +45,7 @@ src = ["src", "tests"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "B", "UP", "SIM", "RUF"]
+ignore = ["E501", "B008"]
 
 [tool.mypy]
 python_version = "3.13"

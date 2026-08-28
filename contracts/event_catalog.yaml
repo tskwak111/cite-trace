@@ -134,3 +134,8 @@ consumer_rules:
     aggregate_type: source_asset
     payload:
       required: [source_asset_id, workspace_id, sha256, byte_size, acquisition_method]
+  - name: reference.resolution.confirmed
+    kind: fact
+    aggregate_type: reference_entry
+    payload:
+      required: [resolution_id, selected_candidate_id, reason]

@@ -3,8 +3,9 @@ info:
   title: CiteTrace API
   version: 1.0.0
   summary: Evidence-first scientific citation tracing API
-  description: Creates asynchronous paper analyses and returns inspectable citation-to-source evidence links. Limited
-    or abstained analyses are successful domain outcomes, not necessarily HTTP errors.
+  description: Creates asynchronous paper analyses and returns inspectable citation-to-source
+    evidence links. Limited or abstained analyses are successful domain outcomes,
+    not necessarily HTTP errors.
 servers:
 - url: http://localhost:8000
   description: Local development
@@ -262,6 +263,67 @@ paths:
       responses:
         '200':
           description: OK
+  /v1/references/{reference_entry_id}:confirm-resolution:
+    post:
+      summary: Confirm reference resolution
+      operationId: confirmResolution
+      tags:
+      - References
+      parameters:
+      - name: reference_entry_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - candidate_id
+              properties:
+                candidate_id:
+                  type: string
+                reason:
+                  type: string
+      responses:
+        '200':
+          description: Resolution confirmed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+  /v1/references/{reference_entry_id}/candidates:
+    get:
+      summary: Get resolution candidates
+      operationId: getResolutionCandidates
+      tags:
+      - References
+      parameters:
+      - name: reference_entry_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        '200':
+          description: List of candidates
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  candidates:
+                    type: array
+                    items:
+                      type: object
 components:
   securitySchemes:
     bearerAuth:

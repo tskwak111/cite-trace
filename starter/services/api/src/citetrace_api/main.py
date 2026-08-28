@@ -12,6 +12,7 @@ from citetrace_api.orchestration.outbox import InMemoryOutbox
 from citetrace_api.routes.analyses import router as analyses_router
 from citetrace_api.routes.documents import router as documents_router
 from citetrace_api.routes.health import router as health_router
+from citetrace_api.routes.references import router as references_router
 from citetrace_api.services.job_store import InMemoryAnalysisStore
 
 
@@ -32,6 +33,7 @@ app = FastAPI(
 )
 app.include_router(health_router)
 app.include_router(analyses_router)
+app.include_router(references_router)
 app.include_router(documents_router)
 
 

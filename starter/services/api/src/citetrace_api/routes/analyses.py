@@ -87,8 +87,11 @@ async def cancel_analysis(
 
 
 
+from citetrace_api.streaming.event_store import EventStore
+from citetrace_api.streaming.sse import sse_stream
+
 @router.get("/{analysis_id}/stream")
-async def stream_analysis(analysis_id: UUID, request: Request) -> StreamingResponse:
+async def stream_analysis(analysis_id: UUID, request: Request, last_event_id: UUID | None = Header(None, alias="Last-Event-ID")) -> StreamingResponse:
     try:
         analysis = await _store(request).get(analysis_id)
     except AnalysisNotFoundError as exc:
@@ -99,18 +102,10 @@ async def stream_analysis(analysis_id: UUID, request: Request) -> StreamingRespo
             "The analysis does not exist or is not visible to this actor.",
         ) from exc
 
-    async def event_stream() -> AsyncIterator[str]:
-        payload = {
-            "event_id": f"analysis-{analysis.id}-{analysis.updated_at.timestamp()}",
-            "event_type": "analysis.state.changed",
-            "schema_version": "1.0.0",
-            "aggregate_id": str(analysis.id),
-            "payload": analysis.model_dump(mode="json"),
-        }
-        yield f"event: analysis.state.changed\ndata: {json.dumps(payload)}\n\n"
-
+    event_store = EventStore()  # In a real app, inject this
+    
     return StreamingResponse(
-        event_stream(),
+        sse_stream(analysis_id, last_event_id, event_store),
         media_type="text/event-stream",
         headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
     )

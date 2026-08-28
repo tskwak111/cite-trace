@@ -175,3 +175,8 @@ consumer_rules:
     aggregate_type: analysis_run
     payload:
       required: [status, evidence_link_count, limitation_count, limits]
+  - name: analysis.progress.updated
+    kind: fact
+    aggregate_type: analysis_run
+    payload:
+      required: [analysis_id, sequence, percent]

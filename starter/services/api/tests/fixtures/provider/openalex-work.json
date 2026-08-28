@@ -1,0 +1,12 @@
+{
+  "id": "https://openalex.org/W12345",
+  "title": "A Foundation Method",
+  "publication_year": 2024,
+  "authorships": [
+    {"author": {"display_name": "Jane Smith"}}
+  ],
+  "primary_location": {
+    "source": {"display_name": "Journal of API Design"}
+  },
+  "doi": "https://doi.org/10.1000/foundation"
+}

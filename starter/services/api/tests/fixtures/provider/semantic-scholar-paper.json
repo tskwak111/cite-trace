@@ -1,0 +1,12 @@
+{
+  "paperId": "abcdef123456",
+  "title": "A Foundation Method",
+  "year": 2024,
+  "venue": "Journal of API Design",
+  "authors": [
+    {"name": "Jane Smith"}
+  ],
+  "externalIds": {
+    "DOI": "10.1000/foundation"
+  }
+}

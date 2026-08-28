@@ -1,0 +1,14 @@
+{
+  "status": "ok",
+  "message": {
+    "items": [
+      {
+        "title": ["A Foundation Method"],
+        "author": [{"family": "Smith", "given": "Jane"}],
+        "issued": {"date-parts": [[2024]]},
+        "container-title": ["Journal of API Design"],
+        "DOI": "10.1000/foundation"
+      }
+    ]
+  }
+}

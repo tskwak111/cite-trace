@@ -1449,3 +1449,86 @@ components:
           items:
             $ref: '#/components/schemas/AccessDecision'
           minItems: 1
+  /v1/feedback:
+    post:
+      tags:
+      - Feedback
+      operationId: submitFeedback
+      summary: Submit feedback for an evidence link
+      parameters:
+      - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FeedbackRequest'
+      responses:
+        '201':
+          description: Feedback accepted.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeedbackEvent'
+  /v1/adjudication-queue:
+    get:
+      tags:
+      - Feedback
+      operationId: getAdjudicationQueue
+      summary: Get the prioritized list of feedback items
+      responses:
+        '200':
+          description: List of adjudication items
+  /v1/notes:
+    post:
+      tags:
+      - Collaboration
+      operationId: createNote
+      summary: Create a private or shared note
+      responses:
+        '201':
+          description: Note created
+    get:
+      tags:
+      - Collaboration
+      operationId: getNotes
+      summary: Get user notes
+      responses:
+        '200':
+          description: List of notes
+  /v1/analyses/{analysis_id}/export:
+    post:
+      tags:
+      - Exports
+      operationId: exportAnalysis
+      summary: Export an analysis preserving provenance
+      responses:
+        '200':
+          description: Export payload
+  /v1/shares:
+    post:
+      tags:
+      - Sharing
+      operationId: createShare
+      summary: Create a share link
+      responses:
+        '201':
+          description: Share link created
+  /v1/shares/{token}:
+    get:
+      tags:
+      - Sharing
+      operationId: resolveShare
+      summary: Resolve a share token
+      responses:
+        '200':
+          description: Share link resolved
+  /v1/shares/{share_id}:
+    delete:
+      tags:
+      - Sharing
+      operationId: revokeShare
+      summary: Revoke a share link
+      responses:
+        '200':
+          description: Share link revoked

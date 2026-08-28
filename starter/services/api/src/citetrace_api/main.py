@@ -10,10 +10,12 @@ from citetrace_api.documents.storage import FakeObjectStore
 from citetrace_api.domain.errors import ProblemException
 from citetrace_api.orchestration.outbox import InMemoryOutbox
 from citetrace_api.routes.analyses import router as analyses_router
+from citetrace_api.routes.collaboration import router as collaboration_router
 from citetrace_api.routes.documents import router as documents_router
+from citetrace_api.routes.evidence import router as evidence_router
+from citetrace_api.routes.feedback import router as feedback_router
 from citetrace_api.routes.health import router as health_router
 from citetrace_api.routes.references import router as references_router
-from citetrace_api.routes.evidence import router as evidence_router
 from citetrace_api.services.job_store import InMemoryAnalysisStore
 
 
@@ -37,6 +39,8 @@ app.include_router(analyses_router)
 app.include_router(references_router)
 app.include_router(documents_router)
 app.include_router(evidence_router)
+app.include_router(feedback_router)
+app.include_router(collaboration_router)
 
 
 @app.exception_handler(ProblemException)

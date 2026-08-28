@@ -1,16 +1,12 @@
-import json
-from collections.abc import AsyncIterator
 from uuid import UUID
 
-from fastapi import APIRouter, Header, Query, Request, Response, status
+from fastapi import APIRouter, Header, Request, Response, status
 from fastapi.responses import StreamingResponse
 
-from citetrace_api.domain.enums import EvidenceLinkStatus, EvidenceRelation
 from citetrace_api.domain.errors import ProblemException
 from citetrace_api.domain.models import (
     Analysis,
     AnalysisCreateRequest,
-    EvidenceLinkPage,
     ProblemDetails,
 )
 from citetrace_api.services.job_store import (
@@ -18,6 +14,8 @@ from citetrace_api.services.job_store import (
     IdempotencyConflictError,
     InMemoryAnalysisStore,
 )
+from citetrace_api.streaming.event_store import EventStore
+from citetrace_api.streaming.sse import sse_stream
 
 router = APIRouter(prefix="/v1/analyses", tags=["Analyses"])
 
@@ -86,14 +84,10 @@ async def cancel_analysis(
 
 
 
-
-from citetrace_api.streaming.event_store import EventStore
-from citetrace_api.streaming.sse import sse_stream
-
 @router.get("/{analysis_id}/stream")
 async def stream_analysis(analysis_id: UUID, request: Request, last_event_id: UUID | None = Header(None, alias="Last-Event-ID")) -> StreamingResponse:
     try:
-        analysis = await _store(request).get(analysis_id)
+        await _store(request).get(analysis_id)
     except AnalysisNotFoundError as exc:
         raise _problem(
             status.HTTP_404_NOT_FOUND,

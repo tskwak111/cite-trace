@@ -1,11 +1,9 @@
-import pytest
+from datetime import UTC, datetime
+from unittest.mock import AsyncMock, patch
 from uuid import uuid4
-from fastapi.testclient import TestClient
-from datetime import datetime, timezone
-import json
-from unittest.mock import AsyncMock, patch, MagicMock
 
-from citetrace_api.main import app
+from fastapi.testclient import TestClient
+
 from citetrace_api.streaming.event_store import StreamEvent
 
 WORKSPACE_ID = str(uuid4())
@@ -48,7 +46,7 @@ def test_stream_replays_after_last_event_id(client: TestClient) -> None:
             event_type="analysis.stage.started",
             schema_version="1.0",
             sequence=3,
-            occurred_at=datetime.now(timezone.utc),
+            occurred_at=datetime.now(UTC),
             payload={}
         ),
         StreamEvent(
@@ -57,7 +55,7 @@ def test_stream_replays_after_last_event_id(client: TestClient) -> None:
             event_type="analysis.completed",
             schema_version="1.0",
             sequence=4,
-            occurred_at=datetime.now(timezone.utc),
+            occurred_at=datetime.now(UTC),
             payload={}
         )
     ]

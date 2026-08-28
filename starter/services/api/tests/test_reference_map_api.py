@@ -1,7 +1,9 @@
+from uuid import uuid4
+
 import pytest
 from fastapi.testclient import TestClient
+
 from citetrace_api.main import app
-from uuid import uuid4
 
 ANALYSIS_ID = uuid4()
 WORKSPACE_ID = str(uuid4())

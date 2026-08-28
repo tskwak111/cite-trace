@@ -1,9 +1,10 @@
-import json
 import asyncio
+import json
 from collections.abc import AsyncIterator
 from uuid import UUID
 
-from citetrace_api.streaming.event_store import StreamEvent, EventStore
+from citetrace_api.streaming.event_store import EventStore, StreamEvent
+
 
 def format_sse(event: StreamEvent) -> str:
     data = json.dumps(event.payload)
@@ -34,5 +35,5 @@ async def sse_stream(analysis_id: UUID, last_event_id: UUID | None, event_store:
                 event_store.wait_for_new(analysis_id, current_sequence, timeout_seconds=15.0),
                 timeout=15.0
             )
-        except asyncio.TimeoutError:
+        except TimeoutError:
             yield format_heartbeat()

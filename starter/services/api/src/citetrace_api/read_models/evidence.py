@@ -1,20 +1,20 @@
 from dataclasses import dataclass
+from enum import StrEnum
 from uuid import UUID
-from enum import Enum
-from typing import Any
 
-class EvidenceLinkStatus(str, Enum):
+
+class EvidenceLinkStatus(StrEnum):
     VERIFIED = "verified"
     LIMITED = "limited"
     REVIEW_REQUIRED = "review_required"
     BLOCKED = "blocked"
 
-class CitationIntent(str, Enum):
+class CitationIntent(StrEnum):
     BACKGROUND = "background"
     METHOD = "method"
     RESULT = "result"
 
-class EvidenceRelation(str, Enum):
+class EvidenceRelation(StrEnum):
     DIRECT_SUPPORT = "direct_support"
     INDIRECT_SUPPORT = "indirect_support"
     CONTRADICTS = "contradicts"

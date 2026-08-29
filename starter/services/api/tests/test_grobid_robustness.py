@@ -112,7 +112,7 @@ async def test_cjk_te_payload_preserves_codepoints(grobid_url: str) -> None:
     reader."""
     fixture = FIXTURES_DIR / "grobid_cjk.pdf"
     assert fixture.exists()
-    cjk = "標昌定義".encode("utf-8")
+    cjk = "標昌定義".encode()
     tei = b'<TEI><teiHeader/><text><body><p>' + cjk + b'</p></body></text></TEI>'
     respx.post(grobid_url).respond(200, content=tei)
     client = GrobidClient()
@@ -128,7 +128,7 @@ async def test_cjk_te_payload_preserves_codepoints(grobid_url: str) -> None:
 async def test_greek_te_payload_preserves_codepoints(grobid_url: str) -> None:
     fixture = FIXTURES_DIR / "grobid_greek.pdf"
     assert fixture.exists()
-    greek = "αβγ".encode("utf-8")
+    greek = "αβγ".encode()
     tei = b'<TEI><teiHeader/><text><body><p>' + greek + b'</p></body></text></TEI>'
     respx.post(grobid_url).respond(200, content=tei)
     client = GrobidClient()

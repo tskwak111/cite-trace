@@ -27,9 +27,12 @@ from __future__ import annotations
 
 import os
 import uuid
-from pathlib import Path
+from typing import TYPE_CHECKING
 
 import pytest
+
+if TYPE_CHECKING:
+    import psycopg
 
 PGVECTOR_URL = os.environ.get(
     "CITETRACE_PGVECTOR_URL", "postgresql://citetrace:citetrace@localhost:55445/citetrace"
@@ -46,10 +49,9 @@ def _database_alive() -> bool:
     except ImportError:
         return False
     try:
-        with psycopg.connect(PGVECTOR_URL, connect_timeout=2) as conn:
-            with conn.cursor() as cur:
-                cur.execute("SELECT 1")
-                cur.fetchone()
+        with psycopg.connect(PGVECTOR_URL, connect_timeout=2) as conn, conn.cursor() as cur:
+            cur.execute("SELECT 1")
+            cur.fetchone()
         return True
     except Exception:
         return False
@@ -63,12 +65,13 @@ def _set_local_tenant(cur, tenant_id: str) -> None:
 
 
 @pytest.fixture(scope="module")
-def app_role_connection() -> "psycopg.Connection":
+def app_role_connection() -> psycopg.Connection:
     """Create a non-superuser, non-bypassrls application role that
     owns the tenant tables, and return a connection that uses
     it. The application role is the role the production code is
     expected to use; it must not bypass RLS."""
     import psycopg
+    # test module is importable in environments without psycopg.
 
     admin = psycopg.connect(PGVECTOR_URL)
     with admin.cursor() as cur:
@@ -166,10 +169,9 @@ def test_every_tenant_table_is_rls_forced() -> None:
         pytest.skip(f"pgvector not reachable at {PGVECTOR_URL}")
     import psycopg
 
-    with psycopg.connect(PGVECTOR_URL) as conn:
-        with conn.cursor() as cur:
-            cur.execute(
-                """
+    with psycopg.connect(PGVECTOR_URL) as conn, conn.cursor() as cur:
+        cur.execute(
+            """
                 SELECT c.relname,
                        c.relrowsecurity AS rls_enabled,
                        c.relforcerowsecurity AS rls_forced
@@ -185,8 +187,8 @@ def test_every_tenant_table_is_rls_forced() -> None:
                   )
                 ORDER BY c.relname
                 """
-            )
-            rows = cur.fetchall()
+        )
+        rows = cur.fetchall()
     assert rows, "no tenant-scoped tables found; the schema has not been applied"
     missing_force = [r[0] for r in rows if not r[2]]
     assert not missing_force, (
@@ -201,13 +203,12 @@ def test_app_role_does_not_bypass_rls(app_role_connection) -> None:
         pytest.skip(f"pgvector not reachable at {PGVECTOR_URL}")
     import psycopg
 
-    with psycopg.connect(PGVECTOR_URL) as conn:
-        with conn.cursor() as cur:
-            cur.execute(
-                "SELECT rolsuper, rolbypassrls FROM pg_roles WHERE rolname = %s",
-                (APP_ROLE,),
-            )
-            row = cur.fetchone()
+    with psycopg.connect(PGVECTOR_URL) as conn, conn.cursor() as cur:
+        cur.execute(
+            "SELECT rolsuper, rolbypassrls FROM pg_roles WHERE rolname = %s",
+            (APP_ROLE,),
+        )
+        row = cur.fetchone()
     assert row is not None, f"{APP_ROLE} role not created; the fixture must run first"
     superuser, bypass = row
     assert not superuser, f"{APP_ROLE} must not be a superuser"
@@ -284,7 +285,7 @@ def test_cross_tenant_write_is_denied(app_role_connection) -> None:
             )
         app_role_connection.commit()
         attack_succeeded = True
-    except Exception as exc:  # noqa: BLE001
+    except Exception as exc:
         app_role_connection.rollback()
         msg = str(exc).lower()
         if "row-level security" in msg or "policy" in msg:

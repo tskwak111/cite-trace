@@ -40,10 +40,9 @@ def _database_alive() -> bool:
     except ImportError:
         return False
     try:
-        with psycopg.connect(DATABASE_URL, connect_timeout=2) as conn:
-            with conn.cursor() as cur:
-                cur.execute("SELECT 1")
-                cur.fetchone()
+        with psycopg.connect(DATABASE_URL, connect_timeout=2) as conn, conn.cursor() as cur:
+            cur.execute("SELECT 1")
+            cur.fetchone()
         return True
     except Exception:
         return False

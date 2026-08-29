@@ -388,6 +388,7 @@ paths:
                     items:
                       type: object
 components:
+  additionalProperties: false
   securitySchemes:
     bearerAuth:
       type: http

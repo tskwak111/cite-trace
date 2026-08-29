@@ -24,7 +24,6 @@ from __future__ import annotations
 
 import hashlib
 import os
-from pathlib import Path
 
 import pytest
 
@@ -40,10 +39,9 @@ def _pgvector_alive() -> bool:
     except ImportError:
         return False
     try:
-        with psycopg.connect(PGVECTOR_URL, connect_timeout=2) as conn:
-            with conn.cursor() as cur:
-                cur.execute("SELECT 1")
-                cur.fetchone()
+        with psycopg.connect(PGVECTOR_URL, connect_timeout=2) as conn, conn.cursor() as cur:
+            cur.execute("SELECT 1")
+            cur.fetchone()
         return True
     except Exception:
         return False
@@ -78,8 +76,8 @@ def test_pgvector_hybrid_search_top_k_deterministic() -> None:
     if not _pgvector_alive():
         pytest.skip(f"pgvector not reachable at {PGVECTOR_URL}")
 
+    from citetrace_api.retrieval.hybrid_search import EvidenceChunk, SearchMode
     from citetrace_api.retrieval.pgvector_search import PgVectorHybridSearchIndex
-    from citetrace_api.retrieval.hybrid_search import SearchMode, EvidenceChunk
 
     chunks = [
         EvidenceChunk(id=cid, text=text, source_span_id=sid)
@@ -114,22 +112,20 @@ def test_evidence_embedding_table_has_tenant_column() -> None:
 
     import psycopg
 
-    with psycopg.connect(PGVECTOR_URL) as conn:
-        with conn.cursor() as cur:
-            cur.execute(
-                "SELECT column_name FROM information_schema.columns "
-                "WHERE table_name = 'evidence_embedding' AND column_name = 'tenant_id'"
-            )
-            rows = cur.fetchall()
-            assert rows, "evidence_embedding must declare a tenant_id column"
+    with psycopg.connect(PGVECTOR_URL) as conn, conn.cursor() as cur:
+        cur.execute(
+            "SELECT column_name FROM information_schema.columns "
+            "WHERE table_name = 'evidence_embedding' AND column_name = 'tenant_id'"
+        )
+        rows = cur.fetchall()
+        assert rows, "evidence_embedding must declare a tenant_id column"
 
-    with psycopg.connect(PGVECTOR_URL) as conn:
-        with conn.cursor() as cur:
-            cur.execute(
-                "SELECT 1 FROM evidence_embedding WHERE tenant_id = %s LIMIT 1",
-                ("00000000-0000-0000-0000-000000000000",),
-            )
-            assert cur.fetchall() == [], (
-                "tenant_id column is present but a stray row exists; "
-                "the test environment must be clean before running this assertion"
-            )
+    with psycopg.connect(PGVECTOR_URL) as conn, conn.cursor() as cur:
+        cur.execute(
+            "SELECT 1 FROM evidence_embedding WHERE tenant_id = %s LIMIT 1",
+            ("00000000-0000-0000-0000-000000000000",),
+        )
+        assert cur.fetchall() == [], (
+            "tenant_id column is present but a stray row exists; "
+            "the test environment must be clean before running this assertion"
+        )

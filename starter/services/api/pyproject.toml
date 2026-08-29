@@ -52,7 +52,14 @@ src = ["src", "tests"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "B", "UP", "SIM", "RUF"]
-ignore = ["E501", "B008"]
+# SIM117 (nested `with`) is suppressed because the existing
+# pgvector / psycopg search path keeps a single connection
+# for the whole request, with `conn.cursor()` as a nested
+# context manager so the cursor lifetime is unambiguous.
+# The auto-fix path is unsafe on multi-statement `with`
+# blocks (the indent guess is wrong on long lines), so we
+# suppress the rule rather than rely on the auto-fix.
+ignore = ["E501", "B008", "SIM117"]
 
 [tool.mypy]
 python_version = "3.13"

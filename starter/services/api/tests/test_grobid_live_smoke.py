@@ -16,14 +16,13 @@ test; locally, you can run it with:
 
 from __future__ import annotations
 
-import asyncio
 import os
 from pathlib import Path
 
 import httpx
 import pytest
 
-from citetrace_api.parsing.grobid_client import GrobidClient
+from citetrace_api.parsing.grobid_client import GrobidClient, GrobidClientError
 
 FIXTURE_PDF = Path(__file__).parent / "fixtures" / "grobid_fixture.pdf"
 LIVE_GROBID_URL = os.environ.get(
@@ -106,5 +105,5 @@ async def test_live_grobid_parses_fixture_pdf() -> None:
 async def test_live_grobid_400_on_invalid_pdf() -> None:
     os.environ["CITETRACE_GROBID_URL"] = LIVE_GROBID_URL
     client = GrobidClient()
-    with pytest.raises(Exception):
+    with pytest.raises(GrobidClientError):
         await client.process_fulltext(b"not a pdf")

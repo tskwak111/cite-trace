@@ -15,8 +15,6 @@ import subprocess
 import sys
 from pathlib import Path
 
-import pytest
-
 REPO_ROOT = Path(__file__).resolve().parents[4]
 ANNOTATE = REPO_ROOT / "scripts" / "annotate.py"
 COMPUTE_IAA = REPO_ROOT / "scripts" / "compute_iaa.py"

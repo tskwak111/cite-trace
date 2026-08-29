@@ -225,7 +225,7 @@ def build_hybrid_search_index(
             with conn.cursor() as cur:
                 cur.execute("SELECT 1")
                 cur.fetchone()
-    except Exception as exc:  # noqa: BLE001
+    except Exception as exc:
         logger.warning(
             "pgvector at %s is not reachable (%s); falling back to "
             "in-memory HybridSearchIndex. The pgvector adapter is required "

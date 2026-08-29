@@ -30,10 +30,10 @@ import math
 import re
 from collections import Counter
 from dataclasses import dataclass
-from enum import Enum
+from enum import StrEnum
 
 
-class SearchMode(str, Enum):
+class SearchMode(StrEnum):
     LEXICAL = "lexical"
     SEMANTIC = "semantic"
     HYBRID = "hybrid"
@@ -166,8 +166,8 @@ class HybridSearchIndex:
             sem_max = max(sem) or 1.0
             w = self._semantic_weight
             scores = [
-                (1 - w) * (l / lex_max) + w * (s / sem_max)
-                for l, s in zip(lex, sem)
+                (1 - w) * (lex_i / lex_max) + w * (sem_i / sem_max)
+                for lex_i, sem_i in zip(lex, sem, strict=True)
             ]
 
         ranked = sorted(

@@ -31,9 +31,13 @@ check:
 	@echo "== validate_eval_assets =="
 	uv run --no-project --with pyyaml \
 	    python scripts/validate_eval_assets.py
+	@echo "== API lint =="
+	cd starter/services/api && ../../services/api/.venv/bin/ruff check src tests
+	@echo "== API typecheck =="
+	cd starter/services/api && ../../services/api/.venv/bin/mypy src
 	@echo "== API tests =="
 	cd starter/services/api && ../../services/api/.venv/bin/pytest -q tests || \
-	    ($(PYTHON) -m pip install -e '.[dev]' && ../../services/api/.venv/bin/pytest -q tests)
+	    (uv pip install --python .venv/bin/python -e '.[dev]' && ../../services/api/.venv/bin/pytest -q tests)
 	@echo "== Ops tests =="
 	cd starter/ops && ../services/api/.venv/bin/pytest tests -q
 	@echo "== Web typecheck =="

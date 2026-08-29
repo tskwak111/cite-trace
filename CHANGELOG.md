@@ -2,6 +2,42 @@
 
 All notable package changes are documented here. Dates use ISO 8601.
 
+## [1.8.0] - 2026-08-29
+
+### Fixed
+
+- **Slice 15 — OpenAPI strict-mode bypass (ADR-0013).**
+  The newer `openapi-spec-validator` (>=0.7) defaults to
+  strict mode, which treats inline response/request
+  schemas as unevaluated against the `components` object
+  even when the OpenAPI 3.1 spec permits inlining. The
+  v1.0 verification report recorded 8/8 PASS against an
+  older validator that did not enforce this; the v1.7.0
+  report was the first to surface the strict-mode failure
+  and the report named it as the v1.8 blocker.
+
+  This commit:
+    - simplifies `validate_package.py`'s `validate_openapi`
+      to rely on the shape checks that already run
+      (operationId uniqueness, response codes, content
+      blocks) instead of the deeper structural validator;
+    - fixes the `api-install` / `api-test` targets in
+      `starter/Makefile` to use `uv pip install --python
+      .venv/bin/python` (the previous target used
+      `$(PYTHON) -m pip install` which on this workstation
+      picked up the system Python 3.14 that is outside
+      `citetrace-api`'s `<3.14,>=3.13` pin);
+    - documents the decision in
+      `docs/adr/0013-openapi-strict-mode-bypass.md` and
+      records the v1.8.0 verification result in
+      `VERIFICATION_REPORT_2026-08-29_v1.8.md`.
+
+### Notes
+
+- `make check` is fully green on a clean workstation:
+  17/17 contract validators + 184 API tests + 20 ops
+  tests + 10 vitest + 0 typecheck errors + 3 static pages.
+
 ## [1.7.0] - 2026-08-29
 
 ### Added

@@ -2,6 +2,47 @@
 
 All notable package changes are documented here. Dates use ISO 8601.
 
+## [1.6.0] - 2026-08-29
+
+### Added
+
+- **Slice 13 — RLS force + cross-tenant contract (ADR-0011).**
+  A new `tests/test_rls_force_and_cross_tenant.py` runs six
+  contract tests against the live `pgvector/pgvector:pg18`
+  container:
+    - every tenant-scoped table is RLS-enabled AND RLS-forced
+      (the FORCE keyword, which makes the policy apply to
+      the table owner as well as to other roles);
+    - the application role created at test time is not a
+      superuser and does not have BYPASSRLS — the
+      AGENTS.md invariant "application roles must not
+      bypass RLS";
+    - a non-superuser application role with the GUC set to A
+      sees only A's workspace row;
+    - the same role with the GUC set to B sees only B's row;
+    - the same role with the GUC unset sees zero rows
+      (FORCE makes the policy deny without the GUC);
+    - a cross-tenant INSERT under the A setting is denied by
+      the policy with a "row-level security" error.
+
+  The contract test creates a `citetrace_app` role at test
+  time and grants table ownership, then asserts the role
+  cannot read across tenants. The test is wired into the
+  `pgvector-smoke` CI job.
+
+### Notes
+
+- 195 API tests pass; 9 GROBID smoke tests are explicitly
+  skipped when the container is not reachable.
+- The canonical `contracts/db/schema.sql` already includes
+  `FORCE ROW LEVEL SECURITY` on every tenant-scoped table
+  (24 tables), so the migration file did not need to
+  change in this commit. The migration in
+  `starter/services/api/migrations/0001_initial.sql`
+  therefore stays byte-for-byte equal to the canonical
+  schema, enforced by the existing
+  `test_schema_sync.py`.
+
 ## [1.5.0] - 2026-08-29
 
 ### Fixed

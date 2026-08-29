@@ -116,6 +116,10 @@ jobs:
         env:
           CITETRACE_DATABASE_URL: postgresql://citetrace:citetrace@localhost:55445/citetrace
         run: pytest -q starter/services/api/tests/test_live_blocking_metrics.py
+      - name: Run RLS force + cross-tenant smoke
+        env:
+          CITETRACE_PGVECTOR_URL: postgresql://citetrace:citetrace@localhost:55445/citetrace
+        run: pytest -q starter/services/api/tests/test_rls_force_and_cross_tenant.py
   web:
     runs-on: ubuntu-latest
     steps:

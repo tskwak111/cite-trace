@@ -2,6 +2,37 @@
 
 All notable package changes are documented here. Dates use ISO 8601.
 
+## [1.4.0] - 2026-08-29
+
+### Added
+
+- **Slice 11 — GROBID robustness fixtures and tests.** A new
+  `scripts/build_grobid_robustness_fixtures.py` generates six
+  deterministic PDFs that cover the production failure modes:
+  multi-page, truncated xref, garbage payload, zero-byte, CJK,
+  and Greek characters. A new
+  `tests/test_grobid_robustness.py` runs ten contract tests
+  against the `GrobidClient`:
+    - multi-page TEI contains two pages
+    - truncated PDF surfaces 4xx/5xx
+    - garbage PDF surfaces 4xx
+    - empty PDF surfaces 4xx
+    - CJK codepoints round-trip through the response reader
+    - Greek codepoints round-trip
+    - 5xx with eventual 200 succeeds after retry
+    - live multi-page PDF reports both `<surface>` elements
+    - live truncated PDF raises `GrobidClientError`
+    - all robustness fixtures are present on disk
+
+  The `respx` mocks cover the offline contract; the two live
+  tests run in the `grobid-smoke` CI job against a real
+  `grobid/grobid:0.9.1-crf` container.
+
+### Notes
+
+- 189 API tests pass; 9 GROBID smoke tests are explicitly
+  skipped when the container is not reachable.
+
 ## [1.3.0] - 2026-08-29
 
 ### Added

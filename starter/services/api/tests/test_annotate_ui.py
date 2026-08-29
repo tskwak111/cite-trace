@@ -17,7 +17,6 @@ import json
 from pathlib import Path
 
 import jsonschema
-import pytest
 
 REPO_ROOT = Path(__file__).resolve().parents[4]
 SCRIPT = REPO_ROOT / "scripts" / "annotate_ui.py"

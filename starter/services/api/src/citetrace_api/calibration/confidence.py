@@ -1,3 +1,4 @@
+import math
 from dataclasses import dataclass
 
 
@@ -22,9 +23,26 @@ class ConfidenceVector:
     reasons: tuple[ConfidenceReason, ...]
 
 
+def _geometric_mean(values: list[float]) -> float:
+    if not values:
+        return 0.0
+    clamped = [max(0.0, min(1.0, v)) for v in values]
+    if any(v == 0.0 for v in clamped):
+        return 0.0
+    return math.exp(sum(math.log(v) for v in clamped) / len(clamped))
+
+
 def calculate_confidence(scores: dict[str, float]) -> ConfidenceVector:
-    weakest = min(scores.values()) if scores else 0.0
-    balanced = sum(scores.values()) / len(scores) if scores else 0.0
+    stage_scores = [scores.get(name, 1.0) for name in (
+        "parse",
+        "reference_resolution",
+        "source_access",
+        "evidence_retrieval",
+        "relation_verification",
+        "explanation_grounding",
+    )]
+    weakest = min(stage_scores) if stage_scores else 0.0
+    balanced = _geometric_mean(stage_scores)
     return ConfidenceVector(
         parse=scores.get("parse", 1.0),
         reference_resolution=scores.get("reference_resolution", 1.0),

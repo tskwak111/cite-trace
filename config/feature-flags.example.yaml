@@ -1,5 +1,13 @@
 version: 1.0.0
 flags:
+  hybrid_evidence_search:
+    default: true
+    owner: retrieval
+    release_gate: hybrid_search_top1_recall_gte_0_85
+    description: >-
+      Combines BM25 lexical scoring with bag-of-words cosine
+      similarity. Disable only for emergency rollbacks; the legacy
+      lexical-only path is not feature-equivalent.
   recursive_lineage_depth_2:
     default: false
     owner: evidence-platform

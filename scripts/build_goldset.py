@@ -132,7 +132,7 @@ def jsonl_to_csv(jsonl_path: Path, csv_path: Path) -> int:
     return len(cases)
 
 
-def generate_synthetic_seed(output: Path, count: int = 50) -> int:
+def generate_synthetic_seed(output: Path, count: int = 100) -> int:
     """Generate a synthetic seed that exercises every evidence relation
     and every domain. This is *not* a substitute for the human
     gold set; it exists so the pipeline can be exercised in

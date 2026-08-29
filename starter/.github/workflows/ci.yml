@@ -38,6 +38,9 @@ jobs:
           else
             echo "::warning::gold set below release minimum; the release gate is synthetic-only until this passes"
           fi
+      - name: Validate gold-set JSON Schema
+        run: |
+          python -c "import json, jsonschema; schema=json.load(open('contracts/schemas/goldset-annotation.v1.schema.json')); jsonschema.Draft202012Validator.check_schema(schema); print('schema valid')"
   grobid-smoke:
     runs-on: ubuntu-latest
     services:

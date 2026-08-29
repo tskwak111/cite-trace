@@ -2,6 +2,50 @@
 
 All notable package changes are documented here. Dates use ISO 8601.
 
+## [1.7.0] - 2026-08-29
+
+### Added
+
+- **Slice 14 — Human-annotated gold-set pipeline (ADR-0012).**
+  The four-script + one-schema infrastructure that drives the
+  human-in-the-loop annotation flow:
+    - `contracts/schemas/goldset-annotation.v1.schema.json`
+      validates every row of the annotation with the 27
+      columns from `eval/goldset_template.csv`. A broken
+      schema is detected by the CI schema-validation step.
+    - `scripts/annotate.py` provides `init` (writes a
+      starter JSONL with the 27 fields), `validate`
+      (checks every row against the JSON Schema, reports
+      valid/invalid counts), and `summary` (per-domain
+      and per-relation counts).
+    - `scripts/compute_iaa.py` reports Cohen's κ for
+      `gold_evidence_relation` and `resolution_status`,
+      and Jaccard for the multi-label dimensions
+      `gold_citation_intents_json` and
+      `gold_transformations_json`. A κ below 0.7 is
+      reported as `below_threshold` and exits 1.
+    - `scripts/adjudicate.py` merges two annotation files
+      into a single adjudicated file. The adjudicator
+      file is the source of truth where present; the
+      majority vote is used otherwise; ties are
+      surfaced for human review.
+  `tests/test_goldset_annotation_pipeline.py` (9 contract
+  tests) pins the four scripts and the schema. The CI
+  workflow gains a `Validate gold-set JSON Schema` step
+  that runs the schema check before any release candidate.
+  The synthetic seed default in
+  `scripts/build_goldset.py synth` is now 100 cases
+  across 12 domains (was 50).
+
+### Notes
+
+- 204 API tests pass; 9 GROBID smoke tests are explicitly
+  skipped when the container is not reachable.
+- The 300 human-annotated cases remain the next blocker
+  for a first credible release. This ADR adds the
+  *infrastructure*; the 300 cases are a multi-week
+  human-in-the-loop activity, not an AI task.
+
 ## [1.6.0] - 2026-08-29
 
 ### Added

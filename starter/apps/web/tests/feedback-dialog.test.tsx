@@ -1,10 +1,11 @@
 import React from 'react';
+import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { EvidenceFeedbackDialog } from '../src/features/feedback/EvidenceFeedbackDialog';
 
 describe('EvidenceFeedbackDialog', () => {
     it('submits feedback with correct category and comment', () => {
-        const handleSubmit = jest.fn();
+        const handleSubmit = vi.fn();
         render(<EvidenceFeedbackDialog evidenceLinkId="123" onSubmit={handleSubmit} onClose={() => {}} />);
 
         fireEvent.change(screen.getByLabelText('Category'), { target: { value: 'source_evidence' } });

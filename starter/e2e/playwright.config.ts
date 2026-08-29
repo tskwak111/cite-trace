@@ -8,6 +8,13 @@ export default defineConfig({
   reporter: 'list',
   use: {
     trace: 'on-first-retry',
+    baseURL: 'http://localhost:3001',
+  },
+  webServer: {
+    command: 'pnpm --dir ../apps/web start --port 3001',
+    url: 'http://localhost:3001',
+    reuseExistingServer: !process.env.CI,
+    timeout: 60_000,
   },
   projects: [
     {

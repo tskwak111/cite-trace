@@ -2,6 +2,48 @@
 
 All notable package changes are documented here. Dates use ISO 8601.
 
+## [1.5.0] - 2026-08-29
+
+### Fixed
+
+- **Slice 12 — Next.js full build + Playwright 3-pane verification.**
+  The web app shipped with `strict: true` but five components
+  declared untyped props (TS7031) and the feedback test used
+  `jest.fn()` under vitest (TS2708). The build itself failed
+  on `@tailwind` directives because Tailwind was not
+  configured.
+
+  This commit:
+    - types `NoteComposer`, `ExportDialog`, and
+      `EvidenceFeedbackDialog` props with explicit
+      `*Props` interfaces and re-exports the payload types
+      (`NoteDraft`, `ExportFormat`, `FeedbackCategory`,
+      `FeedbackPayload`).
+    - converts the `feedback-dialog.test.tsx` mock from
+      `jest.fn()` to `vi.fn()` so the vitest run is green.
+    - adds `tailwind.config.js`, `postcss.config.js`, and
+      the `tailwindcss / postcss / autoprefixer` dev
+      dependencies, so the production build (`pnpm build`)
+      no longer fails on the `@tailwind` directive.
+    - adds `tests/three-pane-reader.spec.ts` (5 Playwright
+      tests) that boots `next start --port 3001` and asserts
+      the three-pane shell renders with reference map,
+      paper, and evidence panes in the expected order, and
+      that the page returns a non-5xx response.
+    - extends the `web` CI job with `pnpm test`,
+      Playwright browser install, and the 3-pane e2e run.
+
+### Notes
+
+- 189 API tests pass; 10 vitest unit tests pass; 5
+  Playwright e2e tests pass; the production `pnpm build`
+  produces 3 static pages from the App Router.
+- The e2e suite uses `next start` against a static
+  prerendered build; the future interactive reader flows
+  (upload, citation click, evidence card) are covered by
+  the existing placeholder specs and will be expanded as
+  the reader becomes interactive.
+
 ## [1.4.0] - 2026-08-29
 
 ### Added

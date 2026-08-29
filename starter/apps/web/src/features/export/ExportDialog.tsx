@@ -1,6 +1,12 @@
 import React from 'react';
 
-export const ExportDialog = ({ onExport }) => {
+export type ExportFormat = 'json' | 'markdown';
+
+export interface ExportDialogProps {
+    onExport: (format: ExportFormat) => void;
+}
+
+export const ExportDialog = ({ onExport }: ExportDialogProps) => {
     return (
         <div role="dialog">
             <h2>Export Analysis</h2>

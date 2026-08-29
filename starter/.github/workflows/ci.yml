@@ -131,3 +131,11 @@ jobs:
         run: pnpm --dir starter/apps/web typecheck
       - name: Build web
         run: pnpm --dir starter/apps/web build
+      - name: Test web
+        run: pnpm --dir starter/apps/web test
+      - name: Install e2e dependencies
+        run: pnpm --dir starter/e2e install --no-frozen-lockfile
+      - name: Install Playwright browsers
+        run: pnpm --dir starter/e2e exec playwright install --with-deps chromium
+      - name: Run 3-pane e2e
+        run: pnpm --dir starter/e2e exec playwright test tests/three-pane-reader.spec.ts

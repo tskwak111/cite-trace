@@ -50,3 +50,12 @@ quarantine/
 MANIFEST.sha256
 *.zip
 *.tar.gz
+
+# Playwright
+playwright-report/
+test-results/
+.playwright/
+
+# Next.js
+next-env.d.ts
+**/.next/

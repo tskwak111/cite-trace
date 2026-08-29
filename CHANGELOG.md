@@ -2,6 +2,48 @@
 
 All notable package changes are documented here. Dates use ISO 8601.
 
+## [1.9.0] - 2026-08-29
+
+### Added
+
+- **Slice 16 — Helm chart templates (ADR-0014).** The
+  `starter/ops/release/helm/` chart shipped in Slice 8 with
+  `Chart.yaml` and `values.yaml` only — no `templates/`
+  directory, so `helm template` rendered an empty
+  document. Slice 16 fills in the contract:
+
+    - `templates/api.yaml` — Deployment for the API
+      workload with securityContext, envFrom, resources,
+      and ServiceAccount references.
+    - `templates/web.yaml` — Deployment for the web
+      workload with NEXT_PUBLIC_API_BASE_URL wired from a
+      ConfigMap.
+    - `templates/worker.yaml` — Deployment for the async
+      worker with the orchestration command, metrics port,
+      and database/redis secrets.
+    - `values.yaml` is extended with `api.name`, `web.name`,
+      `web.serviceAccount`, `web.configMap`, `web.resources`,
+      `worker.name`, `worker.serviceAccount`, and
+      `worker.resources` so every template field is bound.
+
+- `starter/ops/tests/test_helm_lint.py` (3 contract tests):
+  `helm lint` exits 0; `Chart.yaml` declares the required
+  metadata; `helm template` renders exactly 3 Deployments
+  (api, web, worker).
+- The `helm lint` stage is wired into `make check`; CI
+  installs helm via `azure/setup-helm@v4` and runs the
+  same commands in the `helm-lint` job.
+- `starter/services/api/pyproject.toml` ruff
+  configuration documents the SIM117 suppression with
+  the rationale (auto-fix is unsafe on long nested-with
+  blocks).
+
+### Notes
+
+- 195 API tests + 20 ops tests pass; 3 new helm-lint
+  tests are in `starter/ops/tests/test_helm_lint.py`.
+- `make check` exit 0 is preserved.
+
 ## [1.8.0] - 2026-08-29
 
 ### Fixed

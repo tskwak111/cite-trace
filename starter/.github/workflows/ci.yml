@@ -123,6 +123,20 @@ jobs:
         env:
           CITETRACE_PGVECTOR_URL: postgresql://citetrace:citetrace@localhost:55445/citetrace
         run: pytest -q starter/services/api/tests/test_rls_force_and_cross_tenant.py
+  helm-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install helm
+        uses: azure/setup-helm@v4
+        with:
+          version: v3.14.0
+      - name: Lint the production chart
+        run: |
+          helm lint starter/ops/release/helm
+      - name: Render and check expected resources
+        run: |
+          helm template citetrace starter/ops/release/helm | grep -E '^(  name:|kind:)' | head -20
   web:
     runs-on: ubuntu-latest
     steps:

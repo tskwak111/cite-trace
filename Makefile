@@ -40,6 +40,12 @@ check:
 	    (uv pip install --python .venv/bin/python -e '.[dev]' && ../../services/api/.venv/bin/pytest -q tests)
 	@echo "== Ops tests =="
 	cd starter/ops && ../services/api/.venv/bin/pytest tests -q
+	@echo "== Helm lint =="
+	@if command -v helm >/dev/null 2>&1; then \
+	    helm lint starter/ops/release/helm; \
+	else \
+	    echo "(helm not installed; skipping helm lint per ADR-0014)"; \
+	fi
 	@echo "== Web typecheck =="
 	cd starter/apps/web && pnpm typecheck
 	@echo "== Web build =="

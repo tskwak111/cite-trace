@@ -1,0 +1,64 @@
+{{/*
+  CiteTrace API deployment.
+  The chart is a stub that documents the values contract; the
+  template pins the fields that the production Helm release
+  (Slice 8 follow-up) will fill in. ADR-0014 documents that
+  the chart is the load-bearing artefact for the v2.0+ release
+  pipeline; the current template is the contract surface, not
+  the production image.
+*/}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.api.name }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: {{ .Values.api.name }}
+    tier: backend
+spec:
+  replicas: {{ .Values.api.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Values.api.name }}
+      tier: backend
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.api.name }}
+        tier: backend
+    spec:
+      serviceAccountName: {{ .Values.api.serviceAccount.name }}
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        fsGroup: 10001
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: api
+          image: "{{ .Values.api.image.repository }}:{{ .Values.api.image.tag }}"
+          imagePullPolicy: {{ .Values.api.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 8000
+              protocol: TCP
+          envFrom:
+            - secretRef:
+                name: {{ .Values.secrets.databaseUrl.secretKeyRef.name }}
+                key: {{ .Values.secrets.databaseUrl.secretKeyRef.key }}
+            - secretRef:
+                name: {{ .Values.secrets.redisUrl.secretKeyRef.name }}
+                key: {{ .Values.secrets.redisUrl.secretKeyRef.key }}
+          resources:
+            requests:
+              cpu: {{ .Values.api.resources.requests.cpu }}
+              memory: {{ .Values.api.resources.requests.memory }}
+            limits:
+              cpu: {{ .Values.api.resources.limits.cpu }}
+              memory: {{ .Values.api.resources.limits.memory }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]

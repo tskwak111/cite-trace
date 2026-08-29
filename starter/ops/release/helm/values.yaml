@@ -1,4 +1,5 @@
 api:
+  name: api
   image:
     repository: citetrace/api
     tag: "1.0.0"
@@ -32,11 +33,21 @@ api:
       initialDelaySeconds: 5
       periodSeconds: 5
 worker:
+  name: worker
   image:
     repository: citetrace/worker
     tag: "1.0.0"
     pullPolicy: IfNotPresent
   replicaCount: 4
+  serviceAccount:
+    name: citetrace-worker
+  resources:
+    requests:
+      cpu: 750m
+      memory: 1Gi
+    limits:
+      cpu: "3"
+      memory: 2.5Gi
   resources:
     requests:
       cpu: 750m
@@ -45,9 +56,21 @@ worker:
       cpu: "3"
       memory: 2.5Gi
 web:
+  name: web
   image:
     repository: citetrace/web
     tag: "1.0.0"
+  serviceAccount:
+    name: citetrace-web
+  configMap:
+    name: citetrace-web-config
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: "1"
+      memory: 512Mi
     pullPolicy: IfNotPresent
   replicaCount: 3
 ingress:

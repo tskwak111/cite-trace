@@ -144,11 +144,124 @@ pnpm install
 pnpm dev
 ```
 
-Open `http://localhost:3000`; API documentation is available at `http://localhost:8000/docs`.
+---
+
+## 4. Verify the build
+
+```bash
+make check
+```
+
+The `make check` target at the repository root runs every
+offline check: 7/8 contract validators, 204 API tests,
+20 ops tests, 10 web unit tests, the production Next.js
+build, and the release-evaluation script. The one known
+contract gap is `validate_openapi` (a stricter
+`openapi-spec-validator` version rejects the
+`additionalProperties: false` declaration on the root);
+the gap is documented in
+`VERIFICATION_REPORT_2026-08-29_v1.7.md` and is the next
+release blocker.
+
+### Cut a release
+
+The release tool refuses to run on a dirty working tree
+and refuses to push a tag the user did not author:
+
+```bash
+git tag -a v1.8.0 -m 'v1.8.0 release notes'
+make release VERSION=v1.8.0
+```
+
+The `make release` target runs `make check` first; if any
+offline check fails the release is aborted. On success the
+target pushes the tag and creates a GitHub release whose
+body is the new CHANGELOG section. The `gh` CLI is
+required.
+
+### Live integration smokes (optional, requires Docker)
+
+The CI `grobid-smoke` and `pgvector-smoke` jobs run
+real-container integration tests that the offline
+`make check` cannot exercise:
+
+```bash
+# GROBID
+docker run -d --rm -p 8070:8070 grobid/grobid:0.9.1-crf
+sleep 45  # JVM warm-up
+curl -fsS http://localhost:8070/api/isalive
+CITETRACE_GROBID_URL=http://localhost:8070 \
+  pytest -q starter/services/api/tests/test_grobid_live_smoke.py \
+              starter/services/api/tests/test_grobid_robustness.py
+
+# pgvector
+docker run -d --rm -p 55445:5432 \
+  -e POSTGRES_DB=citetrace -e POSTGRES_USER=citetrace \
+  -e POSTGRES_PASSWORD=citetrace pgvector/pgvector:pg18
+PGPASSWORD=citetrace psql -h localhost -p 55445 -U citetrace -d citetrace \
+  -v ON_ERROR_STOP=1 -f contracts/db/schema.sql
+CITETRACE_PGVECTOR_URL=postgresql://citetrace:citetrace@localhost:55445/citetrace \
+  pytest -q starter/services/api/tests/test_pgvector_search.py \
+              starter/services/api/tests/test_rls_force_and_cross_tenant.py \
+              starter/services/api/tests/test_live_blocking_metrics.py
+```
+
+## 5. Annotation pipeline (Slice 14)
+
+The 300-case human gold set is the next blocker for a
+"first credible release". The annotation pipeline
+(`ADR-0012`) provides:
+
+```bash
+# 1. start a 5-case pilot
+python scripts/annotate.py init \
+  --case-ids pilot-001,pilot-002,pilot-003,pilot-004,pilot-005 \
+  --output eval/pilot.jsonl
+
+# 2. edit the JSONL (or convert to CSV, edit, convert back)
+python scripts/build_goldset.py jsonl-to-csv \
+  --jsonl eval/pilot.jsonl --csv eval/pilot.csv
+
+# 3. validate before submit
+python scripts/annotate.py validate --input eval/pilot.jsonl
+
+# 4. measure IAA between two annotators
+python scripts/compute_iaa.py --a annotator-a.jsonl --b annotator-b.jsonl
+
+# 5. adjudicate
+python scripts/adjudicate.py \
+  --a annotator-a.jsonl --b annotator-b.jsonl \
+  --adjudicator adjudicator.jsonl \
+  --output eval/adjudicated.jsonl \
+  --ties eval/ties.jsonl
+```
+
+The release gate refuses to pass on the synthetic seed
+alone; the 300-case human gold set is required.
+
+## 6. Maturity boundary (v1.7)
+
+This package includes a complete target design, executable
+contract scaffold, testable interfaces, evaluation pipeline,
+implementation sequence, and the v1.1–v1.7 slice rebuild
+(14 slices, 5 ADRs, 8 tags). It does **not** include:
+
+- 300 human-annotated gold-set cases (the infrastructure
+  is in place; the cases are a multi-week
+  human-in-the-loop activity);
+- production credentials for external scholarly APIs;
+- commercial legal advice or publisher-specific licensing
+  agreements;
+- a fully implemented PDF coordinate renderer;
+- a production cloud account or deployed infrastructure.
+
+These are intentionally represented as concrete
+implementation and operating work in the included plans
+rather than falsely presented as complete.
 
 ---
 
-## 4. Non-negotiable product principles
+## 7. Non-negotiable product principles
 
 1. **Evidence before explanation.** The system retrieves and stores evidence before generating prose.
 2. **No invented quotations.** Every displayed quote must be byte/character-span anchored to a retained source asset.
@@ -161,7 +274,7 @@ Open `http://localhost:3000`; API documentation is available at `http://localhos
 
 ---
 
-## 5. Package maturity boundaries
+## 8. Package maturity boundaries
 
 This package includes a complete target design, executable contract scaffold, testable interfaces, evaluation plan and implementation sequence. It does not include:
 
@@ -176,7 +289,7 @@ Those are intentionally represented as concrete implementation and operating wor
 
 ---
 
-## 6. Versioning and change control
+## 9. Versioning and change control
 
 - Product specification version: `1.0.0`
 - Public API baseline: `v1`

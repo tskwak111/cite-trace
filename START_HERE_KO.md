@@ -96,29 +96,43 @@ Crossref·OpenAlex·Semantic Scholar 등의 메타데이터 후보를 모으고,
 
 ## 기본 검증 명령
 
-패키지 루트에서:
+v1.7 (14 슬라이스 + 5 ADR + 8 태그)에서는 패키지 루트의 `make check`
+타겟이 모든 오프라인 검증을 한 번에 실행합니다:
 
 ```bash
-python scripts/validate_package.py
-PYTHONPATH=starter/services/api/src pytest -q starter/services/api/tests
-python -m compileall -q starter/services/api/src starter/services/api/tests scripts
-node scripts/validate_typescript_syntax.js
-python scripts/validate_eval_assets.py
-python scripts/score_sample_predictions.py \
-  --gold eval/sample_cases.jsonl \
-  --predictions eval/sample_predictions.jsonl
+make check
 ```
 
-정확한 개발 의존성을 설치한 환경에서는:
+`make check`는 다음을 차례로 실행합니다:
+
+- 7/8 contract validators (`validate_package.py`) — OpenAPI 검증 1건은
+  알려진 v1.8 blocker
+- `validate_eval_assets.py`
+- 204 API tests (`pytest`)
+- 20 ops tests (`pytest`)
+- web typecheck / vitest / production build
+
+추가로 라이브 통합 (Docker 필요) 검증은 `README.md` §4를 참고하세요.
+
+상세 명령을 따로 실행하려면:
 
 ```bash
-cd starter
-make api-lint
-make api-typecheck
-make api-test
-make web-check
-make contracts-check
+# 1. contracts
+uv run --no-project --with pyyaml --with jsonschema \
+  --with openapi-spec-validator python scripts/validate_package.py
+uv run --no-project --with pyyaml python scripts/validate_eval_assets.py
+
+# 2. API
+cd starter/services/api && pytest -q tests
+
+# 3. ops
+cd starter/ops && ../services/api/.venv/bin/pytest tests -q
+
+# 4. web
+cd starter/apps/web && pnpm typecheck && pnpm test && pnpm build
 ```
+
+릴리스 절차는 README.md §4 "Cut a release"를 참고하세요.
 
 ## 반드시 구분해야 하는 것
 

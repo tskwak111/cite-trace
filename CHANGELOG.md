@@ -2,6 +2,48 @@
 
 All notable package changes are documented here. Dates use ISO 8601.
 
+## [1.2.0] - 2026-08-29
+
+### Added
+
+- **Slice 9 — pgvector + embedding adapter.** A new
+  `citetrace_api.retrieval.pgvector_search` module implements
+  `PgVectorHybridSearchIndex` with the same public surface as
+  the in-memory `HybridSearchIndex`. The adapter persists
+  embeddings to a new `evidence_embedding` table backed by
+  `pgvector` (64-dim) and uses PostgreSQL's `ts_rank_cd` for
+  the lexical leg and the `<=>` cosine distance for the
+  semantic leg, combined at `0.5 / 0.5` in the hybrid leg.
+  A new `citetrace_api.retrieval.embeddings` module exposes
+  a deterministic `HashedBagOfWordsEmbedding` (offline,
+  no-network) and a `PassthroughEmbedding` for tests. The
+  factory `build_hybrid_search_index` falls back to the
+  in-memory index when `CITETRACE_PGVECTOR_URL` is unset or
+  unreachable and logs a single WARNING; the fallback is
+  loud, never silent.
+- **ADR-0009** documents the design, the fallback policy,
+  and the explicit out-of-scope list (real embedding
+  provider, HNSW vs IVFFLAT, cross-encoder reranking).
+- **`tests/test_pgvector_search.py`** with four contract
+  tests (deterministic embedding, deterministic top-k,
+  factory fallback, tenant column presence).
+- **CI** adds a `pgvector-smoke` job that brings up a real
+  `pgvector/pgvector:pg18` container, applies the canonical
+  schema, and runs the smoke test.
+- **Issue and PR templates** (`.github/ISSUE_TEMPLATE/`,
+  `.github/PULL_REQUEST_TEMPLATE.md`) so that new
+  contributors and AI agents are forced to confront the
+  AGENTS.md invariants before opening a PR or filing an
+  issue.
+
+### Notes
+
+- 176 API tests pass; 7 GROBID live-smoke tests are
+  explicitly skipped when the container is not reachable.
+- The pgvector adapter is opt-in. The in-memory index
+  remains the default for unit tests and for environments
+  without a pgvector URL.
+
 ## [1.1.0] - 2026-08-29
 
 ### Changed

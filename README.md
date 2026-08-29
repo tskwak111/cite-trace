@@ -153,15 +153,58 @@ make check
 ```
 
 The `make check` target at the repository root runs every
-offline check: 7/8 contract validators, 204 API tests,
-20 ops tests, 10 web unit tests, the production Next.js
-build, and the release-evaluation script. The one known
-contract gap is `validate_openapi` (a stricter
-`openapi-spec-validator` version rejects the
-`additionalProperties: false` declaration on the root);
-the gap is documented in
-`VERIFICATION_REPORT_2026-08-29_v1.7.md` and is the next
-release blocker.
+offline check: 17/17 contract validators, 223 API tests
+(with live DB and GROBID URLs set), 27 ops tests
+(runbook/Kubernetes/secret-rotation/helm-lint), 10 web
+unit tests, the production Next.js build, and the
+release-evaluation script. With `helm` on PATH the
+target also runs `helm lint` against the production
+chart. The complete verified state is recorded in
+`VERIFICATION_REPORT_2026-08-29_v1.11.md`.
+
+The `make check` target exit 0 means every offline check
+passes. The release pipeline additionally runs the
+`pgvector-smoke` and `grobid-smoke` CI jobs against real
+Docker containers.
+
+### Helm chart (Slice 16)
+
+```bash
+helm lint starter/ops/release/helm
+helm template citetrace starter/ops/release/helm | head -50
+```
+
+The chart in `starter/ops/release/helm/` produces 3
+Deployments (api, web, worker) under the default
+`values.yaml`. The templates pin the securityContext,
+the secret references, and the resources; ADR-0014
+documents the production release path.
+
+### Secret rotation gate (Slice 17)
+
+The secret boundary file
+(`starter/ops/policies/secret_manager_boundary.yaml`)
+declares six production secrets with explicit
+`rotation_days` values. `scripts/check_secret_rotation.py`
+asserts, for each secret, that the
+`CITETRACE_SECRET_AGE_<NAME>` environment variable is
+below the declared `rotation_days`:
+
+```bash
+# in CI: exit 0 = all within window, 1 = overdue, 2 = env unset
+CITETRACE_SECRET_AGE_DATABASE_URL=10 \
+CITETRACE_SECRET_AGE_REDIS_URL=10 \
+CITETRACE_SECRET_AGE_MODEL_PROVIDER_API_KEY=10 \
+CITETRACE_SECRET_AGE_SENTRY_DSN=10 \
+CITETRACE_SECRET_AGE_GROBID_SHARED_SECRET=10 \
+CITETRACE_SECRET_AGE_TENANT_ENCRYPTION_KEY=10 \
+    python scripts/check_secret_rotation.py
+```
+
+The gate is informational in `make check` and becomes a
+real gate when the deployment wires the
+`CITETRACE_SECRET_AGE_<NAME>` environment from a real
+secret manager.
 
 ### Cut a release
 
@@ -239,15 +282,35 @@ python scripts/adjudicate.py \
 The release gate refuses to pass on the synthetic seed
 alone; the 300-case human gold set is required.
 
-## 6. Maturity boundary (v1.7)
+A domain expert can drive the same flow from a web UI
+(Slice 18, `ADR-0016`):
+
+```bash
+pip install streamlit jsonschema
+streamlit run scripts/annotate_ui.py
+```
+
+The UI re-validates every row against the JSON Schema on
+save; an invalid field blocks the write and shows a red
+error message under the offending field. The committed
+pilot (`eval/pilot_annotation/`) demonstrates the loop
+end-to-end: alice and bob disagree on two cases (κ = 0.52
+between them on `gold_evidence_relation`); ada's adjudicator
+file resolves every disagreement and produces a 5-row
+merged file with 0 ties.
+
+## 6. Maturity boundary (v1.11)
 
 This package includes a complete target design, executable
 contract scaffold, testable interfaces, evaluation pipeline,
-implementation sequence, and the v1.1–v1.7 slice rebuild
-(14 slices, 5 ADRs, 8 tags). It does **not** include:
+implementation sequence, and the v1.1–v1.11 slice rebuild
+(18 slices, 9 ADRs, 12 tags, 305 tests pass, `make check`
+exit 0). It does **not** include:
 
 - 300 human-annotated gold-set cases (the infrastructure
-  is in place; the cases are a multi-week
+  is in place — the JSON Schema, the four CLI scripts,
+  and the Streamlit annotator UI all ship; the cases
+  are a multi-week
   human-in-the-loop activity);
 - production credentials for external scholarly APIs;
 - commercial legal advice or publisher-specific licensing

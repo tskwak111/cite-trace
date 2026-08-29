@@ -4,6 +4,7 @@ description: CiteTrace evidence-first citation tracing system
 type: application
 version: 1.0.0
 appVersion: "1.0.0"
+icon: https://raw.githubusercontent.com/citetrace/citetrace/main/starter/ops/release/helm/icon.svg
 home: https://github.com/citetrace/citetrace
 sources:
   - https://github.com/citetrace/citetrace

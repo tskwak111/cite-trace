@@ -96,7 +96,7 @@ Crossref·OpenAlex·Semantic Scholar 등의 메타데이터 후보를 모으고,
 
 ## 기본 검증 명령
 
-v1.7 (14 슬라이스 + 5 ADR + 8 태그)에서는 패키지 루트의 `make check`
+v1.11 (18 슬라이스 + 9 ADR + 12 태그)에서는 패키지 루트의 `make check`
 타겟이 모든 오프라인 검증을 한 번에 실행합니다:
 
 ```bash
@@ -105,12 +105,16 @@ make check
 
 `make check`는 다음을 차례로 실행합니다:
 
-- 7/8 contract validators (`validate_package.py`) — OpenAPI 검증 1건은
-  알려진 v1.8 blocker
-- `validate_eval_assets.py`
-- 204 API tests (`pytest`)
-- 20 ops tests (`pytest`)
+- 17/17 contract validators (`validate_package.py`)
+- API lint (`ruff check src tests`)
+- API typecheck (`mypy src`)
+- 223 API tests (live DB+GROBID URL이 설정되면 라이브 통합 테스트도 실행)
+- 27 ops tests (runbook/Kubernetes/secret-rotation/helm-lint)
+- helm lint (helm이 PATH에 있을 때)
 - web typecheck / vitest / production build
+
+`make check` exit 0은 모든 오프라인 검증이 통과했다는 의미입니다. 
+상세 결과는 `VERIFICATION_REPORT_2026-08-29_v1.11.md`에 기록되어 있습니다.
 
 추가로 라이브 통합 (Docker 필요) 검증은 `README.md` §4를 참고하세요.
 

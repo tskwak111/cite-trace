@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="CiteTrace">
+  <title>CiteTrace</title>
+  <rect width="64" height="64" rx="10" fill="#0f172a"/>
+  <g fill="none" stroke="#22d3ee" stroke-width="3" stroke-linecap="round">
+    <path d="M14 18 L14 46"/>
+    <path d="M14 32 L26 32"/>
+    <path d="M14 18 L22 12"/>
+    <path d="M14 46 L22 52"/>
+    <path d="M34 14 L50 50"/>
+    <path d="M50 14 L34 50"/>
+  </g>
+  <circle cx="50" cy="18" r="3" fill="#22d3ee"/>
+</svg>

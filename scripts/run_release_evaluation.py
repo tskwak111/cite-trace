@@ -126,6 +126,8 @@ def evaluate(
     gold_path: Path,
     predictions_path: Path,
     rubric_path: Path,
+    *,
+    live_metrics_path: Path | None = None,
 ) -> dict[str, Any]:
     rubric = _load_rubric(rubric_path)
     gold = read_jsonl(gold_path)
@@ -153,6 +155,11 @@ def evaluate(
 
     metrics = score(gold, predictions)
     metrics.update(_synthesize_blocking_metrics(predictions))
+    if live_metrics_path is not None:
+        live = json.loads(live_metrics_path.read_text(encoding="utf-8"))
+        for name in ("schema_valid_rate", "cross_tenant_access_failures", "inaccessible_source_false_full_text_claims"):
+            if name in live and live[name] is not None:
+                metrics[name] = live[name]
 
     synthetic_only = all(
         record.get("synthetic", False) for record in gold.values()
@@ -178,9 +185,22 @@ def main() -> int:
     parser.add_argument("--predictions", required=True, type=Path)
     parser.add_argument("--rubric", required=True, type=Path)
     parser.add_argument("--output", required=True, type=Path)
+    parser.add_argument(
+        "--live-metrics",
+        type=Path,
+        default=None,
+        help="Optional JSON produced by collect_live_blocking_metrics.py; "
+        "the three blocking metrics it supplies override the synthetic "
+        "fallback when the live values are non-null.",
+    )
     args = parser.parse_args()
 
-    report = evaluate(args.gold, args.predictions, args.rubric)
+    report = evaluate(
+        args.gold,
+        args.predictions,
+        args.rubric,
+        live_metrics_path=args.live_metrics,
+    )
     args.output.write_text(json.dumps(report, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
 
     if not report["passed"]:

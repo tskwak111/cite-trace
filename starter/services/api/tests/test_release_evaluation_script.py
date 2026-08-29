@@ -40,27 +40,32 @@ def _run_evaluation(
     gold_path: Path,
     predictions_path: Path,
     tmp_path: Path,
+    *,
+    live_metrics: Path | None = None,
 ) -> subprocess.CompletedProcess[str]:
     output = tmp_path / "report.json"
+    cmd = [
+        _require_uv(),
+        "run",
+        "--quiet",
+        "--no-project",
+        "--with",
+        "pyyaml",
+        "python",
+        str(SCRIPT),
+        "--gold",
+        str(gold_path),
+        "--predictions",
+        str(predictions_path),
+        "--rubric",
+        str(RUBRIC),
+        "--output",
+        str(output),
+    ]
+    if live_metrics is not None:
+        cmd.extend(["--live-metrics", str(live_metrics)])
     result = subprocess.run(
-        [
-            _require_uv(),
-            "run",
-            "--quiet",
-            "--no-project",
-            "--with",
-            "pyyaml",
-            "python",
-            str(SCRIPT),
-            "--gold",
-            str(gold_path),
-            "--predictions",
-            str(predictions_path),
-            "--rubric",
-            str(RUBRIC),
-            "--output",
-            str(output),
-        ],
+        cmd,
         capture_output=True,
         text=True,
         check=False,
@@ -160,3 +165,31 @@ def test_script_is_not_hardcoded(tmp_path: Path) -> None:
     assert "score_sample_predictions" in source, (
         "run_release_evaluation.py must delegate to score_sample_predictions.py"
     )
+
+
+def test_synthetic_with_live_metrics_passes(tmp_path: Path) -> None:
+    """When the live collector supplies the three blocking metrics
+    and the synthetic contract supplies the case-level metrics,
+    the release gate must pass. This is the acceptance path for
+    Slice 10 (live blocking-metric collection).
+    """
+    live_metrics = tmp_path / "live.json"
+    live_metrics.write_text(
+        json.dumps(
+            {
+                "case_count": 10,
+                "schema_valid_rate": 1.0,
+                "cross_tenant_access_failures": 0,
+                "inaccessible_source_false_full_text_claims": 0,
+            }
+        ),
+        encoding="utf-8",
+    )
+    result = _run_evaluation(SAMPLE_GOLD, SAMPLE_PREDICTIONS, tmp_path, live_metrics=live_metrics)
+    assert result.returncode == 0, (
+        f"synthetic + clean live metrics should pass; got {result.returncode}\n"
+        f"stdout: {result.stdout}\nstderr: {result.stderr}"
+    )
+    report = json.loads((tmp_path / "report.json").read_text(encoding="utf-8"))
+    assert report["passed"] is True
+    assert "schema_valid_rate" not in report["blocking_failures"][0] if report["blocking_failures"] else True

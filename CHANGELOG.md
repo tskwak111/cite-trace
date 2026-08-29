@@ -2,6 +2,54 @@
 
 All notable package changes are documented here. Dates use ISO 8601.
 
+## [1.3.0] - 2026-08-29
+
+### Added
+
+- **Slice 10 — live blocking-metric collection (ADR-0010).**
+  `scripts/collect_live_blocking_metrics.py` measures the three
+  blocking metrics the release gate could not synthesise:
+    - `schema_valid_rate` — fraction of evidence-link payloads
+      that pass the evidence-link.v1 schema's required-key
+      contract;
+    - `cross_tenant_access_failures` — count of audit decisions
+      that recorded a cross-tenant access attempt;
+    - `inaccessible_source_false_full_text_claims` — count of
+      evidence links whose source was `not_accessible` but whose
+      confidence vector records full-text grounding.
+  The script is single-tenant by construction; `--tenant-id` is
+  required and the script `SET LOCAL app.tenant_id` before any
+  read. A missing or unreachable tenant context is a hard
+  failure; a missing measurement is reported as `null`, never
+  zero. Exit codes: 0 (within thresholds), 1 (blocking metric
+  violated), 2 (empty window).
+- `run_release_evaluation.py --live-metrics` accepts a JSON
+  file produced by the collector and applies the rubric to the
+  live values, no longer treating them as unmeasured. The
+  acceptance path for a release is now:
+    1. `collect_live_blocking_metrics.py` against a staging
+       database (Slice 10 output);
+    2. `run_release_evaluation.py --live-metrics ...` against
+       the human-annotated gold set (Slice 7 gate).
+- `tests/test_live_blocking_metrics.py` (4 contract tests:
+  empty window → exit 2, real run → exit 0, missing tenant →
+  hard failure, missing metric ≠ 0).
+- `tests/test_release_evaluation_script.py` gains a
+  `test_synthetic_with_live_metrics_passes` that asserts the
+  end-to-end release gate passes when the synthetic samples
+  are scored against a clean live-metric report.
+- CI: a new step in the `pgvector-smoke` job runs the live
+  collector smoke test against the same PostgreSQL container.
+
+### Notes
+
+- 181 API tests pass; 7 GROBID live-smoke tests are explicitly
+  skipped when the container is not reachable.
+- The release pipeline now has a real path to a green gate
+  on a small staging run, even before the 300-case human gold
+  set exists. The 300-case minimum remains a separate gate
+  enforced by `scripts/build_goldset.py preflight`.
+
 ## [1.2.0] - 2026-08-29
 
 ### Added

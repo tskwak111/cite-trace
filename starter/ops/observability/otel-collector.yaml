@@ -1,0 +1,71 @@
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+
+processors:
+  batch:
+    timeout: 5s
+    send_batch_size: 1024
+  memory_limiter:
+    check_interval: 1s
+    limit_percentage: 80
+    spike_limit_percentage: 20
+  attributes/secret_redaction:
+    actions:
+      - key: http.url
+        action: hash
+      - key: db.url
+        action: hash
+      - key: redis.url
+        action: hash
+      - key: model.api_key
+        action: delete
+      - key: grobid.secret
+        action: delete
+      - key: tenant.token
+        action: delete
+  resourcedetection:
+    detectors: [env, system, k8s]
+    timeout: 2s
+
+exporters:
+  otlphttp/prom:
+    endpoint: http://prometheus-collector.internal:9090/api/v1/otlp
+    tls:
+      insecure: false
+  otlphttp/jaeger:
+    endpoint: http://jaeger-collector.internal:4318
+    tls:
+      insecure: false
+  file/debug:
+    path: /var/log/otel-collector-debug.json
+    rotation: { max_megabytes: 50, max_days: 7, max_backups: 5 }
+
+extensions:
+  health_check:
+    endpoint: 0.0.0.0:13133
+  zpages:
+    endpoint: 0.0.0.0:55679
+
+service:
+  extensions: [health_check, zpages]
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [memory_limiter, attributes/secret_redaction, resourcedetection, batch]
+      exporters: [otlphttp/jaeger]
+    metrics:
+      receivers: [otlp]
+      processors: [memory_limiter, attributes/secret_redaction, resourcedetection, batch]
+      exporters: [otlphttp/prom]
+    logs:
+      receivers: [otlp]
+      processors: [memory_limiter, attributes/secret_redaction, resourcedetection, batch]
+      exporters: [file/debug]
+  telemetry:
+    logs:
+      level: info

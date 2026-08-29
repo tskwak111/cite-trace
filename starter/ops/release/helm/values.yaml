@@ -1,0 +1,114 @@
+api:
+  image:
+    repository: citetrace/api
+    tag: "1.0.0"
+    pullPolicy: IfNotPresent
+  replicaCount: 3
+  serviceAccount:
+    name: citetrace-api
+  resources:
+    requests:
+      cpu: 500m
+      memory: 768Mi
+    limits:
+      cpu: "2"
+      memory: 1.5Gi
+  podSecurityContext:
+    runAsNonRoot: true
+    runAsUser: 10001
+    fsGroup: 10001
+  securityContext:
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
+    capabilities:
+      drop: ["ALL"]
+  probes:
+    liveness:
+      path: /healthz
+      initialDelaySeconds: 15
+      periodSeconds: 10
+    readiness:
+      path: /readyz
+      initialDelaySeconds: 5
+      periodSeconds: 5
+worker:
+  image:
+    repository: citetrace/worker
+    tag: "1.0.0"
+    pullPolicy: IfNotPresent
+  replicaCount: 4
+  resources:
+    requests:
+      cpu: 750m
+      memory: 1Gi
+    limits:
+      cpu: "3"
+      memory: 2.5Gi
+web:
+  image:
+    repository: citetrace/web
+    tag: "1.0.0"
+    pullPolicy: IfNotPresent
+  replicaCount: 3
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-passthrough: "true"
+  hosts:
+    - host: citetrace.example
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - hosts:
+        - citetrace.example
+      secretName: citetrace-tls
+postgresql:
+  enabled: true
+  image:
+    repository: pgvector/pgvector
+    tag: "pg18-0.8.6"
+  database: citetrace
+  extensions:
+    - vector
+    - pgcrypto
+    - citext
+    - pg_trgm
+redis:
+  enabled: true
+  image:
+    repository: redis
+    tag: "8.10.1-alpine"
+grobid:
+  enabled: true
+  image:
+    repository: grobid/grobid
+    tag: "0.9.1-crf"
+secrets:
+  databaseUrl:
+    secretKeyRef:
+      name: citetrace-api
+      key: database-url
+  redisUrl:
+    secretKeyRef:
+      name: citetrace-api
+      key: redis-url
+  modelProviderApiKey:
+    secretKeyRef:
+      name: citetrace-api
+      key: model-provider-api-key
+featureFlags:
+  hybridEvidenceSearch: true
+  recursiveLineageDepth2: false
+  tableRegionEvidence: false
+  multiDocumentWorkspace: false
+  beginnerExplanations: true
+  publicShareLinks: false
+observability:
+  otelCollectorEndpoint: http://otel-collector.observability.svc.cluster.local:4317
+  logLevel: info
+release:
+  registry:
+    defaultRelease: "1.0.0"
+    freeze: false

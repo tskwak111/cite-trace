@@ -19,12 +19,13 @@ import yaml
 
 OPS_ROOT = Path(__file__).resolve().parent.parent
 REPO_ROOT = OPS_ROOT.parent.parent
-SECRETS_FILE = OPS_ROOT / "secrets" / "secret_manager_boundary.yaml"
+SECRETS_FILE = OPS_ROOT / "policies" / "secret_manager_boundary.yaml"
 
 
-def test_secrets_directory_exists() -> None:
-    assert (OPS_ROOT / "secrets").is_dir(), (
-        f"ops/secrets/ directory missing; secrets have no home"
+def test_policies_directory_exists() -> None:
+    assert (OPS_ROOT / "policies").is_dir(), (
+        f"ops/policies/ directory missing; secret-manager and access"
+        f" policies have no home"
     )
 
 

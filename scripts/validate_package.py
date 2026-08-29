@@ -24,6 +24,13 @@ def load_yaml(path: Path) -> Any:
         return yaml.safe_load(handle)
 
 
+def load_yaml_documents(path: Path) -> list[Any]:
+    """Load a YAML file that may contain multiple documents
+    separated by `---` (typical for Kubernetes manifests)."""
+    with path.open(encoding="utf-8") as handle:
+        return [doc for doc in yaml.safe_load_all(handle) if doc is not None]
+
+
 def load_json(path: Path) -> Any:
     with path.open(encoding="utf-8") as handle:
         return json.load(handle)
@@ -66,7 +73,13 @@ def require_paths() -> None:
 def validate_yaml_files() -> None:
     for path in sorted(ROOT.rglob("*.yaml")) + sorted(ROOT.rglob("*.yml")):
         try:
-            load_yaml(path)
+            rel = path.relative_to(ROOT).as_posix()
+            if rel.startswith("starter/ops/deploy/base/") or rel.startswith(
+                "starter/ops/release/helm/"
+            ):
+                load_yaml_documents(path)
+            else:
+                load_yaml(path)
         except Exception as exc:  # noqa: BLE001
             raise ValidationFailure(f"invalid YAML {path.relative_to(ROOT)}: {exc}") from exc
 

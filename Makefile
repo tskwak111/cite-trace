@@ -36,7 +36,10 @@ check:
 	@echo "== API typecheck =="
 	cd starter/services/api && ../../services/api/.venv/bin/mypy src
 	@echo "== API tests =="
-	cd starter/services/api && ../../services/api/.venv/bin/pytest -q tests || \
+	cd starter/services/api && \
+	    CITETRACE_PGVECTOR_URL=$${CITETRACE_PGVECTOR_URL:-postgresql://citetrace:citetrace@localhost:55445/citetrace} \
+	    CITETRACE_DATABASE_URL=$${CITETRACE_DATABASE_URL:-postgresql://citetrace:citetrace@localhost:55445/citetrace} \
+	    ../../services/api/.venv/bin/pytest -q tests || \
 	    (uv pip install --python .venv/bin/python -e '.[dev]' && ../../services/api/.venv/bin/pytest -q tests)
 	@echo "== Ops tests =="
 	cd starter/ops && ../services/api/.venv/bin/pytest tests -q
@@ -46,6 +49,8 @@ check:
 	else \
 	    echo "(helm not installed; skipping helm lint per ADR-0014)"; \
 	fi
+	@echo "== Secret rotation check =="
+	@echo "(skipped by default; override per ADR-0015 with CITETRACE_SECRET_AGE_<NAME> values)"
 	@echo "== Web typecheck =="
 	cd starter/apps/web && pnpm typecheck
 	@echo "== Web build =="

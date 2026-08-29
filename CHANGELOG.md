@@ -2,6 +2,39 @@
 
 All notable package changes are documented here. Dates use ISO 8601.
 
+## [1.10.0] - 2026-08-29
+
+### Added
+
+- **Slice 17 — secret rotation enforcement (ADR-0015).**
+  `scripts/check_secret_rotation.py` reads
+  `starter/ops/policies/secret_manager_boundary.yaml` and
+  asserts every declared secret is within its
+  `rotation_days` window. Exit codes: 0 (all within),
+  1 (overdue), 2 (no `CITETRACE_SECRET_AGE_<NAME>`
+  environment variables set, treated as a hard
+  configuration error so the gate is never silently
+  bypassed). 4 contract tests under
+  `tests/test_secret_rotation.py` cover the contract.
+- `validate_package.py` skips Helm template files
+  (the `{{ ... }}` interpolation makes them not pure
+  YAML); the chart's `Chart.yaml` and `values.yaml` are
+  still validated, and `helm lint` is the load-bearing
+  check for the templates.
+- `make check` exposes `CITETRACE_PGVECTOR_URL` and
+  `CITETRACE_DATABASE_URL` to the API test step so
+  non-default ports work without editing the Makefile.
+
+### Notes
+
+- 195 API tests + 20 ops tests + 3 helm-lint tests + 4
+  secret-rotation tests + 10 vitest pass. `make check`
+  exit 0 preserved.
+- The secret rotation check is informational in `make
+  check` (the gate is the committed boundary file
+  structure); a CI gate that wires the rotation ages
+  from a real secret manager is a deployment follow-up.
+
 ## [1.9.0] - 2026-08-29
 
 ### Added

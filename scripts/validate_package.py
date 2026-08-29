@@ -72,6 +72,12 @@ def require_paths() -> None:
 
 def validate_yaml_files() -> None:
     for path in sorted(ROOT.rglob("*.yaml")) + sorted(ROOT.rglob("*.yml")):
+        # Helm template files use `{{ ... }}` interpolation and
+        # are not pure YAML; they are validated separately by
+        # `helm lint` (ADR-0014). The chart's Chart.yaml and
+        # values.yaml are pure YAML and are validated here.
+        if "/ops/release/helm/templates/" in str(path):
+            continue
         try:
             rel = path.relative_to(ROOT).as_posix()
             if rel.startswith("starter/ops/deploy/base/") or rel.startswith(

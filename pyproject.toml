@@ -1,28 +1,30 @@
-[project]
-name = "citetrace"
-version = "0.1.0"
-description = "Add your description here"
-readme = "README.md"
-authors = [
-    { name = "tssssk", email = "165155073+tskwak111@users.noreply.github.com" }
-]
-requires-python = ">=3.13"
-dependencies = [
-    "pydantic>=2.13.5",
-    "pydantic-settings>=2.15.0",
-]
+# Workspace marker only.
+#
+# The shipped Python package is `citetrace-api` defined in
+# starter/services/api/pyproject.toml. The root directory holds
+# design artifacts (docs/, contracts/, prompts/, eval/, scripts/,
+# starter/) and is intentionally not installable as a Python
+# package.
+#
+# To work on the API:
+#   cd starter/services/api
+#   uv sync
+#   uv run pytest
+#
+# To run the cross-package validators:
+#   uv run --with pydantic --with pyyaml python scripts/validate_package.py
+#   uv run --with pyyaml python scripts/validate_eval_assets.py
+#
+# A previous version of this file declared a `citetrace` console
+# script and an `src/citetrace/` stub package. Both were removed in
+# ADR-0008 Slice 1: the stub was not imported anywhere and the
+# console script printed "Hello from citetrace!", which is not
+# what a research-reading CLI should do on startup.
 
-[project.scripts]
-citetrace = "citetrace:main"
+[tool.ruff]
+line-length = 100
+target-version = "py313"
 
-[build-system]
-requires = ["uv_build>=0.12.7,<0.13.0"]
-build-backend = "uv_build"
-
-[dependency-groups]
-dev = [
-    "mypy>=2.3.1",
-    "pytest>=9.1.1",
-    "pytest-asyncio>=1.4.0",
-    "ruff>=0.16.5",
-]
+[tool.mypy]
+python_version = "3.13"
+strict = true

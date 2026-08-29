@@ -1,7 +1,7 @@
 SHELL := /bin/bash
 PYTHON ?= python3
 
-.PHONY: api-install api-test api-lint api-typecheck api-dev web-install web-check contracts-check check
+.PHONY: api-install api-test api-lint api-typecheck api-dev web-install web-check contracts-check ops-test check
 
 api-install:
 	cd services/api && $(PYTHON) -m pip install -e '.[dev]'
@@ -27,4 +27,7 @@ web-check:
 contracts-check:
 	cd .. && $(PYTHON) scripts/validate_package.py
 
-check: api-lint api-typecheck api-test contracts-check
+ops-test:
+	cd ops && ../services/api/.venv/bin/pytest tests -q
+
+check: api-lint api-typecheck api-test ops-test contracts-check

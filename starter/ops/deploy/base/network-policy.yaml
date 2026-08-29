@@ -2,3 +2,97 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   name: default-deny
+  namespace: citetrace
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress: []
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: citetrace-data
+      ports:
+        - protocol: TCP
+          port: 5432
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: citetrace-data
+      ports:
+        - protocol: TCP
+          port: 6379
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: citetrace-data
+      ports:
+        - protocol: TCP
+          port: 8070
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+            except:
+              - 10.0.0.0/8
+              - 172.16.0.0/12
+              - 192.168.0.0/16
+              - 169.254.0.0/16
+      ports:
+        - protocol: TCP
+          port: 443
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: kube-system
+      ports:
+        - protocol: UDP
+          port: 53
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-web-to-api
+  namespace: citetrace
+spec:
+  podSelector:
+    matchLabels:
+      app: citetrace-api
+      tier: backend
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: citetrace-web
+              tier: frontend
+        - podSelector:
+            matchLabels:
+              app: citetrace-worker
+              tier: backend
+      ports:
+        - protocol: TCP
+          port: 8000
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-ingress-to-web
+  namespace: citetrace
+spec:
+  podSelector:
+    matchLabels:
+      app: citetrace-web
+      tier: frontend
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: ingress-nginx
+      ports:
+        - protocol: TCP
+          port: 3000

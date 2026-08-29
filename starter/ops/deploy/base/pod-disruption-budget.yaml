@@ -2,3 +2,34 @@ apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:
   name: api-pdb
+  namespace: citetrace
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app: citetrace-api
+      tier: backend
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: worker-pdb
+  namespace: citetrace
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app: citetrace-worker
+      tier: backend
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: web-pdb
+  namespace: citetrace
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app: citetrace-web
+      tier: frontend

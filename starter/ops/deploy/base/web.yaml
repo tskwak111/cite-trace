@@ -2,3 +2,94 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: web
+  namespace: citetrace
+  labels:
+    app: citetrace-web
+    tier: frontend
+spec:
+  replicas: 3
+  revisionHistoryLimit: 5
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: citetrace-web
+      tier: frontend
+  template:
+    metadata:
+      labels:
+        app: citetrace-web
+        tier: frontend
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "3000"
+        prometheus.io/path: "/api/metrics"
+    spec:
+      serviceAccountName: citetrace-web
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10002
+        runAsGroup: 10002
+        fsGroup: 10002
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: web
+          image: citetrace/web:RELEASE_TAG
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 3000
+              protocol: TCP
+          env:
+            - name: NEXT_PUBLIC_API_BASE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: citetrace-web-config
+                  key: api-base-url
+            - name: SENTRY_DSN
+              valueFrom:
+                secretKeyRef:
+                  name: citetrace-web
+                  key: sentry-dsn
+                  optional: true
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: "1"
+              memory: 512Mi
+          livenessProbe:
+            httpGet:
+              path: /api/healthz
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /api/readyz
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 2
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app: citetrace-web
+              tier: frontend

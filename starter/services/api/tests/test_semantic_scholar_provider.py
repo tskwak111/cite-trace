@@ -1,4 +1,5 @@
 import json
+from pathlib import Path
 from uuid import uuid4
 
 import pytest
@@ -43,7 +44,8 @@ async def test_semantic_scholar_uses_exact_doi_before_title_search(
         raw_reference="Smith ...",
     )
 
-    with open("tests/fixtures/provider/semantic-scholar-paper.json") as f:
+    fixture_path = Path(__file__).parent / "fixtures" / "provider" / "semantic-scholar-paper.json"
+    with open(fixture_path) as f:
         data = json.load(f)
 
     exact_doi_route = respx.get(

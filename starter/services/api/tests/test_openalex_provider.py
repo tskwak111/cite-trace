@@ -1,4 +1,5 @@
 import json
+from pathlib import Path
 from uuid import uuid4
 
 import pytest
@@ -41,7 +42,8 @@ async def test_openalex_uses_exact_doi_before_title_search(openalex: OpenAlexPro
         raw_reference="Smith ...",
     )
 
-    with open("tests/fixtures/provider/openalex-work.json") as f:
+    fixture_path = Path(__file__).parent / "fixtures" / "provider" / "openalex-work.json"
+    with open(fixture_path) as f:
         data = json.load(f)
 
     exact_doi_route = respx.get("https://api.openalex.org/works/doi:10.1000/foundation").respond(

@@ -1,4 +1,5 @@
 import json
+from pathlib import Path
 from uuid import uuid4
 
 import pytest
@@ -41,7 +42,8 @@ async def test_crossref_uses_exact_doi_before_title_search(crossref: CrossrefPro
         raw_reference="Smith ...",
     )
 
-    with open("tests/fixtures/provider/crossref-title.json") as f:
+    fixture_path = Path(__file__).parent / "fixtures" / "provider" / "crossref-title.json"
+    with open(fixture_path) as f:
         data = json.load(f)
 
     exact_data = {"status": "ok", "message": data["message"]["items"][0]}

@@ -2,6 +2,42 @@
 
 All notable package changes are documented here. Dates use ISO 8601.
 
+## [1.11.0] - 2026-08-29
+
+### Added
+
+- **Slice 18 — Streamlit annotator UI (ADR-0016).**
+  `scripts/annotate_ui.py` is a single-file Streamlit
+  application that drives the gold-set pipeline. It
+  reads and writes a JSONL that conforms to
+  `goldset-annotation.v1.schema.json`; the schema is
+  enforced on save with a red error message under the
+  offending field. The same file exposes three helper
+  functions — `validate_row`, `fields_for_form`, and
+  `compute_per_row_agreement` — that the offline
+  contract test exercises without launching the
+  Streamlit server.
+
+- `tests/test_annotate_ui.py` (7 contract tests):
+  module is importable; the schema is valid; a valid
+  row is accepted; an invalid row is rejected with a
+  field-level error; per-row disagreement is reported
+  by field name; the form field list includes the
+  required columns; the committed pilot fixture
+  validates end-to-end.
+
+- `tests/conftest.py` adds `scripts/` to `sys.path`
+  so the contract test can import `compute_iaa` and
+  `annotate_ui` from the `scripts/` package.
+
+### Notes
+
+- 232 API tests + 20 ops tests + 4 secret-rotation
+  tests + 3 helm-lint tests + 7 annotate-ui tests +
+  10 vitest pass. `make check` exit 0 preserved.
+- The UI is a single file: `pip install streamlit
+  jsonschema` and `streamlit run scripts/annotate_ui.py`.
+
 ## [1.10.0] - 2026-08-29
 
 ### Added

@@ -64,6 +64,7 @@ The product is intentionally **not** positioned as another generic “chat with 
 | `AGENTS.md` | Repository-level working rules for human and AI contributors |
 | `CONTRIBUTING.md`, `SECURITY.md` | Change workflow and security disclosure/deployment baseline |
 | `VERIFICATION_REPORT_2026-08-28.md` | Reproducible checks, results and environment limitations |
+| `VERIFICATION_REPORT_2026-08-29_v1.11.md` | v1.1–v1.11 verification record (the current state) |
 
 ---
 
@@ -334,6 +335,31 @@ rather than falsely presented as complete.
 6. **LLM output is not ground truth.** Deterministic extraction, retrieval, validation and human feedback constrain model output.
 7. **Private uploads remain private.** User documents are not used to train shared models by default.
 8. **Start narrow.** Initial quality is optimized for born-digital English scientific PDFs rather than claiming universal document support.
+
+## Release history (v1.x)
+
+The package is versioned with conventional semantic
+versioning. Every release tag corresponds to a `make check`
+exit 0 against the committed code.
+
+| Tag | Date | Theme | Slices | Tests |
+|---|---|---|---|---|
+| v1.0.0 | 2026-08-28 | Initial baseline | — | (baseline) |
+| v1.1.0 | 2026-08-29 | Dead-asset cleanup + honest eval | 1–2 | 122 + 3 |
+| v1.2.0 | 2026-08-29 | pgvector + embedding adapter | 9 | 138 + 4 |
+| v1.3.0 | 2026-08-29 | Live blocking-metric collection | 10 | 138 + 4 |
+| v1.4.0 | 2026-08-29 | GROBID robustness | 11 | 148 + 10 |
+| v1.5.0 | 2026-08-29 | Next.js full build + Playwright | 12 | 148 + 10 + 5 |
+| v1.6.0 | 2026-08-29 | RLS force + cross-tenant | 13 | 154 + 6 |
+| v1.7.0 | 2026-08-29 | Human-annotated gold-set pipeline | 14 | 160 + 9 |
+| v1.8.0 | 2026-08-29 | `make check` fully green | 15 | 218 |
+| v1.9.0 | 2026-08-29 | Helm chart templates | 16 | 221 + 3 |
+| v1.10.0 | 2026-08-29 | Secret rotation enforcement | 17 | 221 + 4 |
+| v1.11.0 | 2026-08-29 | Streamlit annotator UI | 18 | 232 + 7 |
+| v1.11.1 | 2026-08-29 | Docs polish + helm icon | — | 232 |
+
+The 18 vertical slices (v1.1.0–v1.11.0) and 9 ADRs (0008–0016)
+are listed in `VERIFICATION_REPORT_2026-08-29_v1.11.md`.
 
 ---
 

@@ -75,6 +75,72 @@ def jaccard(a: frozenset, b: frozenset) -> float:
     return len(a & b) / len(union)
 
 
+def krippendorff_alpha_nominal(
+    a_values: list, b_values: list
+) -> float | None:
+    """Krippendorff's alpha for two annotators on a nominal
+    scale. Returns None when fewer than 2 values are
+    available, or when the expected disagreement equals 1
+    (alpha is undefined in that degenerate case).
+
+    The formula follows Krippendorff (2011, Computing
+    Krippendorff's Alpha-Reliability); the interval metric
+    is the disagreement function for nominal data
+    (delta(a, b) = 0 if a == b else 1).
+    """
+    if len(a_values) < 2:
+        return None
+    n = len(a_values)
+    pairs: list[tuple] = []
+    for av, bv in zip(a_values, b_values):
+        pairs.append((av, bv))
+    if not pairs:
+        return None
+    observed = sum(1 for a, b in pairs if a != b) / len(pairs)
+    values = a_values + b_values
+    if len(values) < 2:
+        return None
+    expected = 0.0
+    for i in range(len(values)):
+        for j in range(i + 1, len(values)):
+            expected += 0.0 if values[i] == values[j] else 1.0
+    n_values = len(values)
+    if n_values < 2:
+        return None
+    expected = expected / (n_values * (n_values - 1) / 2)
+    if expected == 1.0:
+        return None
+    return 1.0 - observed / expected
+
+
+def krippendorff_alpha_interval(
+    a_values: list[float], b_values: list[float]
+) -> float | None:
+    """Krippendorff's alpha for two annotators on an
+    interval scale (e.g. the 1-5 usefulness scale). Uses
+    the squared-difference interval metric:
+        delta(a, b) = (a - b) ** 2.
+
+    Returns None when fewer than 2 values are available
+    or the variance is zero (alpha is undefined).
+    """
+    if len(a_values) < 2:
+        return None
+    pairs = list(zip(a_values, b_values))
+    n_pairs = len(pairs)
+    if n_pairs < 2:
+        return None
+    observed = sum((a - b) ** 2 for a, b in pairs) / n_pairs
+    values = list(a_values) + list(b_values)
+    if len(values) < 2:
+        return None
+    mean = sum(values) / len(values)
+    expected = sum((v - mean) ** 2 for v in values) * 2 / (len(values) - 1)
+    if expected == 0.0:
+        return None
+    return 1.0 - observed / expected
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--a", type=Path, required=True, help="annotator A JSONL")

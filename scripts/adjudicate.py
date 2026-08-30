@@ -37,9 +37,31 @@ def _read_jsonl(path: Path) -> dict[str, dict]:
 
 
 def _write_jsonl(path: Path, rows: list[dict]) -> None:
-    with path.open("w", encoding="utf-8") as fh:
-        for row in rows:
-            fh.write(json.dumps(row, ensure_ascii=False) + "\n")
+    """Write rows to `path` atomically by writing to a
+    sibling temporary file and renaming it into place.
+
+    The rename is atomic on the same filesystem, so a
+    concurrent adjudicate run that observes the file
+    either sees the old contents or the new contents,
+    never a half-written file. A partial write would
+    surface as a JSON parse error in the next pipeline
+    step, which is the failure mode this guard prevents.
+    """
+    import os
+
+    path.parent.mkdir(parents=True, exist_ok=True)
+    tmp = path.with_suffix(path.suffix + ".tmp")
+    try:
+        with tmp.open("w", encoding="utf-8") as fh:
+            for row in rows:
+                fh.write(json.dumps(row, ensure_ascii=False) + "\n")
+            fh.flush()
+            os.fsync(fh.fileno())
+        os.replace(tmp, path)
+    except Exception:
+        if tmp.exists():
+            tmp.unlink()
+        raise
 
 
 def _majority(a: Any, b: Any) -> tuple[Any, bool]:

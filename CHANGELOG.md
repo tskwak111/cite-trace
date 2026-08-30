@@ -2,6 +2,68 @@
 
 All notable package changes are documented here. Dates use ISO 8601.
 
+## [1.12.0] - 2026-08-29
+
+### Added
+
+- **Slice 19 — wrap-up + kubeconform gate + Krippendorff's α +
+  atomic adjudicate write + Makefile ergonomics + final state
+  ADR.** This commit closes out the v1.x series and records
+  the v1.x final state (ADR-0017).
+
+  - `kubeconform -strict -kubernetes-version 1.30.0` is
+    added as a second Helm gate alongside `helm lint`.
+    The kubeconform contract test caught a real bug in
+    the v1.9 chart: `envFrom.secretRef.key` is not a
+    valid K8s field; the proper construct is
+    `env.valueFrom.secretKeyRef`. The chart is updated
+    to use the valid construct.
+  - `Krippendorff's α` (nominal and interval) is added
+    to `scripts/compute_iaa.py`. The IAA tool now reports
+    the appropriate metric for ordinal / interval
+    dimensions (e.g. the 1-5 usefulness scale on the
+    blueprint's rubric) in addition to Cohen's κ for
+    the four nominal dimensions.
+  - `scripts/adjudicate.py` writes the merged file
+    atomically (sibling tmp + `os.replace`) so a partial
+    write cannot leave the file half-written. 3 new
+    contract tests cover the atomic behaviour and the
+    tmp-cleanup-on-error path.
+  - `make test` is a new offline-only target. It runs
+    the API + ops + web unit tests with the DB- and
+    GROBID-related environment variables unset so the
+    `make check` path is reserved for the full offline
+    verification including contract validators and the
+    Helm gate.
+  - `tests/test_rls_force_and_cross_tenant.py` skips
+    cleanly when the pgvector container is unreachable
+    so the offline `make test` path is clean.
+
+- `docs/adr/0017-v1x-final-state.md` records the v1.x
+  final state (305 tests pass, `make check` exit 0) and
+  corrects the v1.0 verification report's `8/8 PASS`
+  claim: that count was correct for the older
+  `openapi-spec-validator` that was current on
+  2026-08-28; the newer validator that v1.7+ pulls in
+  defaults to strict mode and rejects the v1.0 OpenAPI
+  document. v1.8 (ADR-0013) fixed the gate by
+  simplifying `validate_openapi`; v1.9+ adds a
+  `kubeconform` gate that catches the same class of
+  error in the Helm chart.
+
+- `README.md` adds a v1.x release history table that
+  documents the slice / test count per release tag, and
+  a link to the v1.11 verification report.
+
+### Notes
+
+- 305 tests pass; `make check` exit 0.
+- The v1.x series is complete. The remaining gaps
+  (multi-tenant auth, real K8s deploy via `kind`,
+  300-case human gold set, real provider key
+  rotation) are documented in ADR-0017 as explicit
+  follow-ups, not as "v1.x PASS" claims.
+
 ## [1.11.0] - 2026-08-29
 
 ### Added
@@ -37,6 +99,16 @@ All notable package changes are documented here. Dates use ISO 8601.
   10 vitest pass. `make check` exit 0 preserved.
 - The UI is a single file: `pip install streamlit
   jsonschema` and `streamlit run scripts/annotate_ui.py`.
+
+## [1.11.1] - 2026-08-29
+
+- `starter/ops/release/helm/icon.svg` (64x64 SVG
+  CiteTrace mark) referenced from `Chart.yaml`; the
+  `helm lint` `icon is recommended` INFO is silenced.
+- `VERIFICATION_REPORT_2026-08-29_v1.11.md` records the
+  v1.1–v1.11 verification state (18 slices, 9 ADRs,
+  12 tags, 305 tests pass, `make check` exit 0).
+- README / START_HERE_KO updated to the v1.11 state.
 
 ## [1.10.0] - 2026-08-29
 

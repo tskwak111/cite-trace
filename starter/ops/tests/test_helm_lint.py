@@ -7,6 +7,13 @@ same command and asserts the exit code is 0; if the chart
 template or values drift into an invalid state, this test
 fails first.
 
+When `kubeconform` is also on PATH the test additionally
+asserts that the rendered manifest is schema-valid
+against the Kubernetes 1.30 JSON Schema. This catches
+mistakes that `helm lint` accepts but the cluster
+rejects (e.g. `envFrom.secretRef.key` is not a valid
+field; the proper construct is `env.valueFrom.secretKeyRef`).
+
 The test is skipped if `helm` is not on PATH so the test
 suite still runs on machines without the Helm CLI.
 """
@@ -27,6 +34,10 @@ def _helm_available() -> bool:
     return shutil.which("helm") is not None
 
 
+def _kubeconform_available() -> bool:
+    return shutil.which("kubeconform") is not None
+
+
 @pytest.mark.skipif(not _helm_available(), reason="helm CLI is required")
 def test_helm_lint_passes() -> None:
     result = subprocess.run(
@@ -38,6 +49,40 @@ def test_helm_lint_passes() -> None:
     assert result.returncode == 0, (
         f"helm lint must exit 0 per ADR-0014; got {result.returncode}\n"
         f"stdout: {result.stdout}\nstderr: {result.stderr}"
+    )
+
+
+@pytest.mark.skipif(not _helm_available(), reason="helm CLI is required")
+@pytest.mark.skipif(not _kubeconform_available(), reason="kubeconform is optional")
+def test_rendered_manifest_passes_kubeconform_strict() -> None:
+    """The rendered manifest must validate against the
+    Kubernetes 1.30 JSON Schema in strict mode. This
+    catches template errors that helm lint accepts but
+    a real cluster would reject."""
+    template = subprocess.run(
+        ["helm", "template", "citetrace", str(CHART)],
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    rendered = template.stdout
+    check = subprocess.run(
+        [
+            "kubeconform",
+            "-summary",
+            "-strict",
+            "-kubernetes-version",
+            "1.30.0",
+        ],
+        input=rendered,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert check.returncode == 0, (
+        f"kubeconform -strict must accept the rendered manifest; "
+        f"got exit {check.returncode}\n"
+        f"stdout: {check.stdout}\nstderr: {check.stderr}"
     )
 
 

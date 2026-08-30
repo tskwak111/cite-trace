@@ -43,13 +43,17 @@ spec:
             - name: http
               containerPort: 8000
               protocol: TCP
-          envFrom:
-            - secretRef:
-                name: {{ .Values.secrets.databaseUrl.secretKeyRef.name }}
-                key: {{ .Values.secrets.databaseUrl.secretKeyRef.key }}
-            - secretRef:
-                name: {{ .Values.secrets.redisUrl.secretKeyRef.name }}
-                key: {{ .Values.secrets.redisUrl.secretKeyRef.key }}
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.databaseUrl.secretKeyRef.name }}
+                  key: {{ .Values.secrets.databaseUrl.secretKeyRef.key }}
+            - name: REDIS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.redisUrl.secretKeyRef.name }}
+                  key: {{ .Values.secrets.redisUrl.secretKeyRef.key }}
           resources:
             requests:
               cpu: {{ .Values.api.resources.requests.cpu }}

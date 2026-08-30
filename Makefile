@@ -20,7 +20,8 @@ GITHUB_REPO ?=
 
 help:
 	@echo "targets:"
-	@echo "  make check         - run all offline verifiers"
+	@echo "  make check         - run all offline verifiers (with live DB+GROBID)"
+	@echo "  make test          - run the offline unit tests only (no DB+GROBID)"
 	@echo "  make release       - bump VERSION, tag, push, gh release create"
 	@echo "  make release-dry-run - show the would-be release steps without changing anything"
 
@@ -49,12 +50,36 @@ check:
 	else \
 	    echo "(helm not installed; skipping helm lint per ADR-0014)"; \
 	fi
+	@echo "== Helm kubeconform =="
+	@if command -v helm >/dev/null 2>&1 && command -v kubeconform >/dev/null 2>&1; then \
+	    helm template citetrace starter/ops/release/helm \
+	        | kubeconform -summary -strict -kubernetes-version 1.30.0 -; \
+	else \
+	    echo "(helm or kubeconform not installed; skipping kubeconform gate)"; \
+	fi
 	@echo "== Secret rotation check =="
 	@echo "(skipped by default; override per ADR-0015 with CITETRACE_SECRET_AGE_<NAME> values)"
 	@echo "== Web typecheck =="
 	cd starter/apps/web && pnpm typecheck
 	@echo "== Web build =="
 	cd starter/apps/web && pnpm build
+
+# `make test` is the offline unit-test fast path. It runs the
+# API + ops + web tests with CITETRACE_PGVECTOR_URL and
+# CITETRACE_DATABASE_URL unset so the DB-dependent tests
+# skip cleanly. It does NOT run the contract validators,
+# the helm lint, the web build, or any live smoke.
+test:
+	@echo "== API tests (offline) =="
+	cd starter/services/api && \
+	    env -u CITETRACE_PGVECTOR_URL -u CITETRACE_DATABASE_URL -u CITETRACE_GROBID_URL \
+	    ../../services/api/.venv/bin/pytest -q tests
+	@echo "== Ops tests =="
+	cd starter/ops && \
+	    env -u CITETRACE_PGVECTOR_URL -u CITETRACE_DATABASE_URL \
+	    ../services/api/.venv/bin/pytest tests -q
+	@echo "== Web unit tests =="
+	cd starter/apps/web && pnpm test
 
 release-dry-run:
 	@echo "VERSION=$(VERSION)  GITHUB_REPO=$(GITHUB_REPO)"

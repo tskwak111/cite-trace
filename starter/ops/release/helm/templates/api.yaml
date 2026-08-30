@@ -54,6 +54,11 @@ spec:
                 secretKeyRef:
                   name: {{ .Values.secrets.redisUrl.secretKeyRef.name }}
                   key: {{ .Values.secrets.redisUrl.secretKeyRef.key }}
+            - name: CITETRACE_AUTH_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.authSecret.secretKeyRef.name }}
+                  key: {{ .Values.secrets.authSecret.secretKeyRef.key }}
           resources:
             requests:
               cpu: {{ .Values.api.resources.requests.cpu }}
@@ -66,3 +71,15 @@ spec:
             readOnlyRootFilesystem: true
             capabilities:
               drop: ["ALL"]
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            initialDelaySeconds: {{ .Values.api.probes.liveness.initialDelaySeconds }}
+            periodSeconds: {{ .Values.api.probes.liveness.periodSeconds }}
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: http
+            initialDelaySeconds: {{ .Values.api.probes.readiness.initialDelaySeconds }}
+            periodSeconds: {{ .Values.api.probes.readiness.periodSeconds }}

@@ -4,11 +4,30 @@ from uuid import UUID, uuid4
 import pytest
 from fastapi.testclient import TestClient
 
+import citetrace_api.main
 from citetrace_api.documents.storage import FakeObjectStore, source_object_key
 from citetrace_api.main import app
 from citetrace_api.orchestration.handlers import DocumentSourceRegisteredHandler
 from citetrace_api.orchestration.outbox import InMemoryOutbox
 from citetrace_api.parsing.models import ParsedDocumentRecord
+from citetrace_api.security.auth import WorkspacePrincipal, issue_token
+
+_AUTH_SECRET = "test-secret-do-not-use-in-prod-0123456789"
+_citetrace_api_main_app = citetrace_api.main.app
+
+
+def _make_auth_client():
+    import uuid
+
+    workspace = uuid.uuid4()
+    token = issue_token(workspace, "admin", _AUTH_SECRET, ttl_seconds=3600)
+    principal = WorkspacePrincipal(workspace_id=workspace, role="admin")
+    from citetrace_api.security.auth import current_principal
+
+    _citetrace_api_main_app.dependency_overrides[current_principal] = lambda: principal
+    client = TestClient(_citetrace_api_main_app)
+    client.headers["Authorization"] = f"Bearer {token}"
+    return client
 
 
 class MockParsedDocsRepo:
@@ -197,7 +216,8 @@ async def test_parsing_failure_produces_failed_status(object_store, outbox, pars
 
 
 def test_get_document_endpoint():
-    with TestClient(app) as client:
+    auth_client = _make_auth_client()
+    with auth_client as client:
         ws_id = uuid4()
         doc_id = uuid4()
 

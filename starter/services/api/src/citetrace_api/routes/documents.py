@@ -2,7 +2,7 @@ from datetime import UTC, datetime, timedelta
 from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, File, Header, Request, Response, UploadFile, status
+from fastapi import APIRouter, Depends, File, Header, Request, Response, UploadFile, status
 from pydantic import BaseModel
 
 from citetrace_api.config import get_settings
@@ -11,6 +11,7 @@ from citetrace_api.documents.pdf_validation import PdfValidationCode
 from citetrace_api.documents.registry import DocumentRegistry
 from citetrace_api.domain.errors import ProblemException
 from citetrace_api.domain.models import ProblemDetails
+from citetrace_api.security.auth import WorkspacePrincipal, current_principal
 
 router = APIRouter(prefix="/v1/documents", tags=["Documents"])
 
@@ -31,8 +32,8 @@ async def upload_document(
     request: Request,
     response: Response,
     file: Annotated[UploadFile, File(...)],
-    x_workspace_id: Annotated[UUID, Header()],
     idempotency_key: Annotated[str, Header()],
+    principal: WorkspacePrincipal = Depends(current_principal),
 ) -> SourceAssetResponse:
     if file.content_type != "application/pdf":
         raise ProblemException(
@@ -56,7 +57,7 @@ async def upload_document(
             )
         )
 
-    idem_key = (str(x_workspace_id), idempotency_key)
+    idem_key = (str(principal.workspace_id), idempotency_key)
     if idem_key in request.app.state.upload_idempotency:
         cached_res = request.app.state.upload_idempotency[idem_key]
         response.status_code = status.HTTP_200_OK
@@ -66,7 +67,7 @@ async def upload_document(
     now = datetime.now(UTC)
     retention_expires_at = now + timedelta(days=30)
     upload_req = RegisterUpload(
-        workspace_id=x_workspace_id,
+        workspace_id=principal.workspace_id,
         original_filename=file.filename or "unknown.pdf",
         media_type="application/pdf",
         data=data,
@@ -112,7 +113,7 @@ async def upload_document(
     outbox.add_event(
         event_type="document.source.registered",
         aggregate_id=asset.id,
-        workspace_id=x_workspace_id,
+        workspace_id=principal.workspace_id,
         payload={
             "source_asset_id": str(asset.id),
             "workspace_id": str(asset.workspace_id),
@@ -149,6 +150,7 @@ class DocumentStatusResponse(BaseModel):
 async def get_document(
     request: Request,
     source_asset_id: UUID,
+    principal: WorkspacePrincipal = Depends(current_principal),
 ) -> DocumentStatusResponse:
     # We can query the Outbox and ParsedDocuments to infer state
     outbox = request.app.state.in_memory_outbox

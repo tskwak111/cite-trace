@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from fastapi import APIRouter, Header, Request, Response, status
+from fastapi import APIRouter, Depends, Header, Request, Response, status
 from fastapi.responses import StreamingResponse
 
 from citetrace_api.domain.errors import ProblemException
@@ -9,6 +9,7 @@ from citetrace_api.domain.models import (
     AnalysisCreateRequest,
     ProblemDetails,
 )
+from citetrace_api.security.auth import WorkspacePrincipal, current_principal
 from citetrace_api.services.job_store import (
     AnalysisNotFoundError,
     IdempotencyConflictError,
@@ -38,6 +39,7 @@ async def create_analysis(
     request: Request,
     response: Response,
     idempotency_key: str = Header(min_length=8, max_length=255, alias="Idempotency-Key"),
+    principal: WorkspacePrincipal = Depends(current_principal),
 ) -> Analysis:
     try:
         analysis, created = await _store(request).create(command, idempotency_key)
@@ -53,7 +55,11 @@ async def create_analysis(
 
 
 @router.get("/{analysis_id}", response_model=Analysis)
-async def get_analysis(analysis_id: UUID, request: Request) -> Analysis:
+async def get_analysis(
+    analysis_id: UUID,
+    request: Request,
+    principal: WorkspacePrincipal = Depends(current_principal),
+) -> Analysis:
     try:
         return await _store(request).get(analysis_id)
     except AnalysisNotFoundError as exc:
@@ -70,6 +76,7 @@ async def cancel_analysis(
     analysis_id: UUID,
     request: Request,
     idempotency_key: str = Header(min_length=8, max_length=255, alias="Idempotency-Key"),
+    principal: WorkspacePrincipal = Depends(current_principal),
 ) -> Analysis:
     del idempotency_key
     try:
@@ -85,7 +92,12 @@ async def cancel_analysis(
 
 
 @router.get("/{analysis_id}/stream")
-async def stream_analysis(analysis_id: UUID, request: Request, last_event_id: UUID | None = Header(None, alias="Last-Event-ID")) -> StreamingResponse:
+async def stream_analysis(
+    analysis_id: UUID,
+    request: Request,
+    last_event_id: UUID | None = Header(None, alias="Last-Event-ID"),
+    principal: WorkspacePrincipal = Depends(current_principal),
+) -> StreamingResponse:
     try:
         await _store(request).get(analysis_id)
     except AnalysisNotFoundError as exc:

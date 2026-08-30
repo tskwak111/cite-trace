@@ -1,10 +1,29 @@
-from collections.abc import Generator
+from collections.abc import Iterator
 from uuid import UUID
 
 import pytest
 from fastapi.testclient import TestClient
 
-from citetrace_api.main import app
+import citetrace_api.main
+from citetrace_api.security.auth import WorkspacePrincipal, issue_token
+
+_AUTH_SECRET = "test-secret-do-not-use-in-prod-0123456789"
+_citetrace_api_main_app = citetrace_api.main.app
+
+
+def _make_auth_client(workspace: UUID | None = None):
+    import uuid
+
+    workspace = workspace or uuid.uuid4()
+    token = issue_token(workspace, "admin", _AUTH_SECRET, ttl_seconds=3600)
+    principal = WorkspacePrincipal(workspace_id=workspace, role="admin")
+    from citetrace_api.security.auth import current_principal
+
+    _citetrace_api_main_app.dependency_overrides[current_principal] = lambda: principal
+    client = TestClient(_citetrace_api_main_app)
+    client.headers["Authorization"] = f"Bearer {token}"
+    return client
+
 
 WORKSPACE_ID = UUID("11111111-1111-1111-1111-111111111111")
 
@@ -46,9 +65,9 @@ startxref
 
 
 @pytest.fixture
-def client() -> Generator[TestClient]:
-    with TestClient(app) as client:
-        yield client
+def client() -> Iterator[TestClient]:
+    client = _make_auth_client(workspace=WORKSPACE_ID)
+    yield client
 
 
 @pytest.fixture

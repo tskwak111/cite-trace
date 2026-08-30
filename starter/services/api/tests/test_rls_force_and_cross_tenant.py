@@ -65,7 +65,7 @@ def _set_local_tenant(cur, tenant_id: str) -> None:
 
 
 @pytest.fixture(scope="module")
-def app_role_connection() -> "psycopg.Connection":
+def app_role_connection() -> psycopg.Connection:
     """Create a non-superuser, non-bypassrls application role that
     owns the tenant tables, and return a connection that uses
     it. The application role is the role the production code is
@@ -76,8 +76,7 @@ def app_role_connection() -> "psycopg.Connection":
     """
     if not _database_alive():
         pytest.skip(f"pgvector not reachable at {PGVECTOR_URL}")
-    import psycopg  # noqa: PLC0415 - imported lazily so the
-    # test module is importable in environments without psycopg.
+    import psycopg  # imported lazily so the offline path is clean
 
     admin = psycopg.connect(PGVECTOR_URL)
     with admin.cursor() as cur:

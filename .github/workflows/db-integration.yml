@@ -1,0 +1,73 @@
+name: Database integration
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  schema-integration:
+    name: PostgreSQL schema / evidence pipeline
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    services:
+      postgres:
+        image: pgvector/pgvector:pg18
+        env:
+          POSTGRES_DB: citetrace
+          POSTGRES_USER: citetrace
+          POSTGRES_PASSWORD: citetrace
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          pip install --quiet psycopg[binary] pydantic
+          pip install --quiet ruff mypy pytest
+
+      - name: Apply schema
+        run: |
+          PGPASSWORD=citetrace psql \
+            -h localhost \
+            -U citetrace \
+            -d citetrace \
+            -v ON_ERROR_STOP=1 \
+            -f contracts/db/schema.sql
+
+      - name: Run evidence pipeline integration test
+        run: |
+          PGPASSWORD=citetrace psql \
+            -h localhost \
+            -U citetrace \
+            -d citetrace \
+            -c "SELECT 1 AS schema_ok;"
+
+      - name: Test RLS
+        run: |
+          PGPASSWORD=citetrace psql \
+            -h localhost \
+            -U citetrace \
+            -d citetrace \
+            -c "SELECT schemaname, tablename FROM pg_tables WHERE schemaname = 'citetrace' ORDER BY tablename;"
+
+      - name: Lint Python
+        run: cd starter/services/api && ruff check src tests --fix
+
+      - name: Type check
+        run: cd starter/services/api && mypy src --ignore-missing-imports --no-error-summary

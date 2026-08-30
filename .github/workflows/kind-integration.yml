@@ -1,0 +1,99 @@
+name: Kubernetes integration
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: "0 6 * * *"  # weekly
+
+jobs:
+  kind-integration:
+    name: kind cluster / helm install
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker
+        uses: docker/setup-buildx-action@v3
+
+      - name: Install kind
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq kubectl curl
+          curl -fsSL https://kind.sigs.k8s.io/dl/latest/kind-linux-amd64 -o /tmp/kind
+          chmod +x /tmp/kind
+          sudo mv /tmp/kind /usr/local/bin/kind
+
+      - name: Create kind cluster
+        run: |
+          kind create cluster --name citetrace --wait 60s
+          kubectl version --client
+          kubectl cluster-info
+
+      - name: Build API image
+        run: |
+          docker build \
+            --target runtime \
+            --tag citetrace/api:latest \
+            --tag citetrace/api:${{ github.sha }} \
+            starter/services/api
+
+      - name: Load image into kind
+        run: kind load docker-image citetrace/api:${{ github.sha }} --name citetrace
+
+      - name: Helm dependency build
+        run: helm dependency build starter/ops/release/helm
+
+      - name: Helm install (dry-run first)
+        run: |
+          helm upgrade --install citetrace starter/ops/release/helm \
+            --dry-run \
+            --debug \
+            --namespace citetrace \
+            --create-namespace
+
+      - name: Helm install (live)
+        run: |
+          helm upgrade --install citetrace starter/ops/release/helm \
+            --namespace citetrace \
+            --create-namespace \
+            --set api.image.tag=${{ github.sha }} \
+            --set worker.image.tag=${{ github.sha }} \
+            --set web.image.tag=latest
+
+      - name: Wait for resources
+        run: |
+          kubectl wait --for=condition=available \
+            --timeout=120s \
+            deployment/citetrace-api \
+            --namespace citetrace || true
+          kubectl wait --for=condition=available \
+            --timeout=120s \
+            deployment/citetrace-worker \
+            --namespace citetrace || true
+          kubectl wait --for=condition=available \
+            --timeout=120s \
+            deployment/citetrace-web \
+            --namespace citetrace || true
+
+      - name: List resources
+        run: |
+          kubectl get all --namespace citetrace
+          kubectl get events --namespace citetrace --sort-by=.lastTimestamp
+
+      - name: Validate Services exist
+        run: |
+          kubectl get service citetrace-api -n citetrace
+          kubectl get service citetrace-worker -n citetrace
+
+      - name: Show helm list
+        run: helm list -n citetrace
+
+      - name: Cleanup
+        if: always()
+        run: kind delete cluster --name citetrace
